@@ -29,3 +29,4 @@ uvloop==0.16.0
 watchgod==0.8.2
 websockets==10.3
 sqlalchemy==1.4.22
+pymysql==1.0.2
