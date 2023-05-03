@@ -4,7 +4,7 @@ from sqlalchemy.orm import aliased
 
 from starlette.middleware.cors import CORSMiddleware
 from db import session
-from model import PokemonTable, Pokemon
+from model import PokemonTable, Pokemon, create_pokemon_table
 from pydantic import BaseSettings
 
 class Settings(BaseSettings):
@@ -28,9 +28,13 @@ settings = Settings()
 async def root():
     return {"message": settings.pwd}
 
-@app.get("/test")
-def test():
-    return {"text":"page"}
+@app.post("/insert/pokemon")
+async def insert_pokemon(item: Pokemon):
+    pokemon = create_pokemon_table(item)
+    session.add(pokemon)
+    session.commit()
+
+    return f"{item.name} 추가 완료"
 
 @app.get("/test2")
 def test2():

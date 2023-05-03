@@ -13,8 +13,6 @@ class PokemonTable(Base):
     classification = Column(String(45))
     characteristic = Column(String(45))
     attribute = Column(String(45))
-    dotImage = Column(String(500))
-    dotShinyImage = Column(String(500))
     image = Column(String(500))
     shinyImage = Column(String(500))
     spotlight = Column(String(500))
@@ -29,13 +27,27 @@ class Pokemon(BaseModel):
     classification : str = None
     characteristic : str = None
     attribute : str = None
-    dotImage : str = None
-    dotShinyImage : str = None
     image : str = None
     shinyImage : str = None
     spotlight: str = None
     description : str = None
     generation : int = None
+
+def create_pokemon_table(item: Pokemon) -> PokemonTable:
+    pokemon = PokemonTable()
+    pokemon.number = item.number
+    pokemon.name = item.name
+    pokemon.status = item.status
+    pokemon.classification = item.classification
+    pokemon.characteristic = item.characteristic
+    pokemon.attribute = item.attribute
+    pokemon.image = item.image
+    pokemon.spotlight = item.spotlight
+    pokemon.shinyImage = item.shinyImage
+    pokemon.description = item.description
+    pokemon.generation = item.generation
+
+    return pokemon
 
 def main():
     # Table 없으면 생성
