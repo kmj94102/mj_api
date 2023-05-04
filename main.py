@@ -4,7 +4,8 @@ from sqlalchemy.orm import aliased
 
 from starlette.middleware.cors import CORSMiddleware
 from db import session
-from model import PokemonTable, Pokemon, create_pokemon_table
+from model import PokemonTable, Pokemon, create_pokemon_table, \
+    CharacteristicTable, Characteristic, create_characteristic_table
 from pydantic import BaseSettings
 
 class Settings(BaseSettings):
@@ -36,7 +37,17 @@ async def insert_pokemon(item: Pokemon):
 
     return f"{item.name} 추가 완료"
 
-@app.get("/test2")
-def test2():
-    pokemon = session.query(PokemonTable).filter().first()
-    return pokemon
+# 특성 등록
+@app.post("/insert/char")
+async def create_characteristic(item: Characteristic):
+    result = item.name
+    char = session.query(CharacteristicTable).filter(CharacteristicTable.name == item.name).first()
+    if char is None:
+        charTable = create_characteristic_table(item)
+
+        session.add(charTable)
+        session.commit()
+        result = f"{item.name} 추가완료"
+    else:
+        result = f"{item.name} 이미 추가된 특성입니다."
+    return result

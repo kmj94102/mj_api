@@ -4,6 +4,7 @@ from db import Base
 from db import ENGINE
 from typing import List
 
+
 class PokemonTable(Base):
     __tablename__ = 'pokemon'
     index = Column(Integer, primary_key=True, autoincrement=True)
@@ -19,19 +20,21 @@ class PokemonTable(Base):
     description = Column(String(500))
     generation = Column(Integer)
 
+
 class Pokemon(BaseModel):
-    index : int = None
+    index: int = None
     number: str = None
-    name : str = None
-    status : str = None
-    classification : str = None
-    characteristic : str = None
-    attribute : str = None
-    image : str = None
-    shinyImage : str = None
+    name: str = None
+    status: str = None
+    classification: str = None
+    characteristic: str = None
+    attribute: str = None
+    image: str = None
+    shinyImage: str = None
     spotlight: str = None
-    description : str = None
-    generation : int = None
+    description: str = None
+    generation: int = None
+
 
 def create_pokemon_table(item: Pokemon) -> PokemonTable:
     pokemon = PokemonTable()
@@ -49,9 +52,30 @@ def create_pokemon_table(item: Pokemon) -> PokemonTable:
 
     return pokemon
 
+
+class CharacteristicTable(Base):
+    __tablename__ = 'characteristic'
+    index = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(45))
+    description = Column(String(45))
+
+
+class Characteristic(BaseModel):
+    index: int = None
+    name: str = None
+    description: str = None
+
+
+def create_characteristic_table(item: Characteristic) -> CharacteristicTable:
+    charTable = CharacteristicTable()
+    charTable.name = item.name
+    charTable.description = item.description
+    return charTable
+
 def main():
     # Table 없으면 생성
     Base.metadata.create_all(bind=ENGINE)
+
 
 if __name__ == "__main__":
     main()
