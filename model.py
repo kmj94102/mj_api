@@ -17,6 +17,7 @@ class PokemonTable(Base):
     image = Column(String(500))
     shinyImage = Column(String(500))
     spotlight = Column(String(500))
+    shinySpotlight = Column(String(500))
     description = Column(String(500))
     generation = Column(Integer)
 
@@ -32,6 +33,7 @@ class Pokemon(BaseModel):
     image: str = None
     shinyImage: str = None
     spotlight: str = None
+    shinySpotlight: str = None
     description: str = None
     generation: int = None
 
@@ -46,6 +48,7 @@ def create_pokemon_table(item: Pokemon) -> PokemonTable:
     pokemon.attribute = item.attribute
     pokemon.image = item.image
     pokemon.spotlight = item.spotlight
+    pokemon.shinySpotlight = item.shinySpotlight
     pokemon.shinyImage = item.shinyImage
     pokemon.description = item.description
     pokemon.generation = item.generation
