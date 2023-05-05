@@ -57,7 +57,7 @@ class CharacteristicTable(Base):
     __tablename__ = 'characteristic'
     index = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(45))
-    description = Column(String(45))
+    description = Column(String(200))
 
 
 class Characteristic(BaseModel):
