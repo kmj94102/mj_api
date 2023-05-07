@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 from pydantic import BaseModel
 from db import Base
 from db import ENGINE
@@ -20,6 +20,7 @@ class PokemonTable(Base):
     shinySpotlight = Column(String(500))
     description = Column(String(500))
     generation = Column(Integer)
+    isCatch = Column(Boolean)
 
 
 class Pokemon(BaseModel):
@@ -36,7 +37,7 @@ class Pokemon(BaseModel):
     shinySpotlight: str = None
     description: str = None
     generation: int = None
-
+    isCatch: bool = False
 
 def create_pokemon_table(item: Pokemon) -> PokemonTable:
     pokemon = PokemonTable()
@@ -52,6 +53,7 @@ def create_pokemon_table(item: Pokemon) -> PokemonTable:
     pokemon.shinyImage = item.shinyImage
     pokemon.description = item.description
     pokemon.generation = item.generation
+    pokemon.isCatch = item.isCatch
 
     return pokemon
 
