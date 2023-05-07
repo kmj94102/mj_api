@@ -29,6 +29,8 @@ settings = Settings()
 async def root():
     return {"message": settings.pwd}
 
+######### 포켓몬 ###########
+# 포켓몬 등록
 @app.post("/insert/pokemon")
 async def insert_pokemon(item: Pokemon):
     pokemon = create_pokemon_table(item)
@@ -36,6 +38,17 @@ async def insert_pokemon(item: Pokemon):
     session.commit()
 
     return f"{item.name} 추가 완료"
+
+# 포켓몬 리스트 조회
+@app.get("/pokemonList")
+async def read_pokemon_list(skip: int = 0, limit: int = 100):
+    list = session.query(PokemonTable.number, PokemonTable.name, PokemonTable.spotlight, PokemonTable.shinySpotlight)\
+        .offset(skip).limit(limit).all()
+    total_size = session.query(PokemonTable).count()
+    return {
+        "list": list,
+        "totalSize": total_size
+    }
 
 # 특성 등록
 @app.post("/insert/char")
