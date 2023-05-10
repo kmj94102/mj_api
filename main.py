@@ -36,9 +36,11 @@ async def root():
 # 포켓몬 등록
 @app.post("/insert/pokemon")
 async def insert_pokemon(item: Pokemon):
-    pokemon = create_pokemon_table(item)
-    session.add(pokemon)
-    session.commit()
+    data = session.query(PokemonTable).filter(PokemonTable.name == item.name).first()
+    if data is None:
+        pokemon = create_pokemon_table(item)
+        session.add(pokemon)
+        session.commit()
 
     return f"{item.name} 추가 완료"
 
@@ -46,6 +48,8 @@ async def insert_pokemon(item: Pokemon):
 # 포켓몬 리스트 조회
 @app.get("/pokemonList")
 async def read_pokemon_list(skip: int = 0, limit: int = 100):
+    session.commit()
+
     list = session.query(PokemonTable.index, PokemonTable.number, PokemonTable.name, PokemonTable.spotlight,
                          PokemonTable.shinySpotlight) \
         .offset(skip).limit(limit).all()
