@@ -1,11 +1,13 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import aliased
+from sqlalchemy import update
 
 from starlette.middleware.cors import CORSMiddleware
 from db import session
 from model import PokemonTable, Pokemon, create_pokemon_table, \
-    CharacteristicTable, Characteristic, create_characteristic_table
+    CharacteristicTable, Characteristic, create_characteristic_table, \
+    UpdateIsCatch
 from pydantic import BaseSettings
 
 
@@ -80,6 +82,13 @@ async def read_pokemon_image(index: int):
     return session.query(PokemonTable.number, PokemonTable.image, PokemonTable.shinyImage).filter(
         PokemonTable.index == index).first()
 
+# 포켓몬 잡은 상태 업데이트
+@app.post("/update/pokemon/catch")
+async def update_pokemon_is_catch(item: UpdateIsCatch):
+    pokemon = session.query(PokemonTable).filter(PokemonTable.number == item.number).first()
+    pokemon.isCatch = item.isCatch
+    session.commit()
+    return f"{item.number} 업데이트 완료"
 
 # 특성 등록
 @app.post("/insert/char")

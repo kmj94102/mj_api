@@ -77,6 +77,10 @@ def create_characteristic_table(item: Characteristic) -> CharacteristicTable:
     charTable.description = item.description
     return charTable
 
+class UpdateIsCatch(BaseModel):
+    number: str
+    isCatch: bool
+
 def main():
     # Table 없으면 생성
     Base.metadata.create_all(bind=ENGINE)
