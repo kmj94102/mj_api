@@ -51,7 +51,7 @@ async def read_pokemon_list(name: str = "", skip: int = 0, limit: int = 100):
     session.commit()
 
     list = session.query(PokemonTable.index, PokemonTable.number, PokemonTable.name, PokemonTable.spotlight,
-                         PokemonTable.shinySpotlight) \
+                         PokemonTable.shinySpotlight, PokemonTable.isCatch) \
         .filter(PokemonTable.name.like(f"%{name}%")).offset(skip).limit(limit).all()
     total_size = session.query(PokemonTable).filter(PokemonTable.name.like(f"%{name}%")).count()
     return {
