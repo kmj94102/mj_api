@@ -47,13 +47,13 @@ async def insert_pokemon(item: Pokemon):
 
 # 포켓몬 리스트 조회
 @app.get("/pokemonList")
-async def read_pokemon_list(skip: int = 0, limit: int = 100):
+async def read_pokemon_list(name: str = "", skip: int = 0, limit: int = 100):
     session.commit()
 
     list = session.query(PokemonTable.index, PokemonTable.number, PokemonTable.name, PokemonTable.spotlight,
                          PokemonTable.shinySpotlight) \
-        .offset(skip).limit(limit).all()
-    total_size = session.query(PokemonTable).count()
+        .filter(PokemonTable.name.like(f"%{name}%")).offset(skip).limit(limit).all()
+    total_size = session.query(PokemonTable).filter(PokemonTable.name.like(f"%{name}%")).count()
     return {
         "list": list,
         "totalSize": total_size
