@@ -7,9 +7,10 @@ from starlette.middleware.cors import CORSMiddleware
 from db import session
 from model import PokemonTable, Pokemon, create_pokemon_table, \
     CharacteristicTable, Characteristic, create_characteristic_table, \
-    UpdateIsCatch
+    UpdateIsCatch, Schedule, ScheduleItem, create_schedule
 from pydantic import BaseSettings
-
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 
 class Settings(BaseSettings):
     pwd: str
@@ -104,3 +105,64 @@ async def create_characteristic(item: Characteristic):
     else:
         result = f"{item.name} 이미 추가된 특성입니다."
     return result
+
+
+
+
+######### 달력 ###########
+# 신규 일정 등록
+@app.post("/insert/schedule")
+async def insert_schedule(item: ScheduleItem):
+    schedule = create_schedule(item)
+    result = await insert_schedule_item(schedule)
+
+    if item.recurrenceType == "yearly":
+        await yearly_schedule(item, result)
+    elif item.recurrenceType == "monthly":
+        await monthly_schedule(item, result)
+    elif item.recurrenceType == "weekly":
+        await weekly_schedule(item, result)
+    elif item.recurrenceType == "daily":
+        await daily_schedule(item, result)
+
+    return f"{result} / {result == 5}"
+
+async def insert_schedule_item(schedule: Schedule) -> int:
+    session.add(schedule)
+    session.flush()
+    session.commit()
+    session.refresh(schedule)
+
+    return schedule.id
+
+async def yearly_schedule(item: ScheduleItem, id: int):
+    current = item.startTime + relativedelta(years=1)
+    while current <= item.recurrenceEndDate:
+        item.startTime = current
+        item.endTime = item.endTime + relativedelta(years=1)
+        await insert_schedule_item(create_schedule(item, id))
+        current = current  + relativedelta(years=1)
+
+async def monthly_schedule(item: ScheduleItem, id: int):
+    current = item.startTime + relativedelta(months=1)
+    while current <= item.recurrenceEndDate:
+        item.startTime = current
+        item.endTime = item.endTime + relativedelta(months=1)
+        await insert_schedule_item(create_schedule(item, id))
+        current = current  + relativedelta(months=1)
+
+async def weekly_schedule(item: ScheduleItem, id: int):
+    current = item.startTime + timedelta(days = 7)
+    while current <= item.recurrenceEndDate:
+        item.startTime = current
+        item.endTime = item.endTime + timedelta(days = 7)
+        await insert_schedule_item(create_schedule(item, id))
+        current = current + timedelta(days = 7)
+
+async def daily_schedule(item: ScheduleItem, id: int):
+    current = item.startTime + timedelta(days = 1)
+    while current <= item.recurrenceEndDate:
+        item.startTime = current
+        item.endTime = item.endTime + timedelta(days = 1)
+        await insert_schedule_item(create_schedule(item, id))
+        current = current + timedelta(days = 1)

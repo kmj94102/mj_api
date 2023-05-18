@@ -1,9 +1,10 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from pydantic import BaseModel
 from db import Base
 from db import ENGINE
 from typing import List
-
+from typing import Optional
+from datetime import datetime
 
 class PokemonTable(Base):
     __tablename__ = 'pokemon'
@@ -80,6 +81,38 @@ def create_characteristic_table(item: Characteristic) -> CharacteristicTable:
 class UpdateIsCatch(BaseModel):
     number: str
     isCatch: bool
+
+class Schedule(Base):
+    __tablename__ = 'schedule'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    startTime = Column(DateTime)
+    endTime = Column(DateTime)
+    recurrenceType = Column(String(50))
+    recurrenceEndDate = Column(DateTime)
+    scheduleContent = Column(String(255))
+    scheduleTitle = Column(String(255))
+    recurrenceId = Column(Integer, nullable=True)
+
+class ScheduleItem(BaseModel):
+    startTime: datetime
+    endTime: datetime
+    recurrenceType: str
+    recurrenceEndDate: datetime
+    scheduleContent: str
+    scheduleTitle: str
+
+def create_schedule(item: ScheduleItem, recurrence_id: Optional[int] = None) -> Schedule :
+    schedule = Schedule()
+    schedule.startTime = item.startTime
+    schedule.endTime = item.endTime
+    schedule.recurrenceType = item.recurrenceType
+    schedule.recurrenceEndDate = item.recurrenceEndDate
+    schedule.scheduleContent = item.scheduleContent
+    schedule.scheduleTitle = item.scheduleTitle
+    schedule.recurrenceId = recurrence_id
+
+    return schedule
 
 def main():
     # Table 없으면 생성
