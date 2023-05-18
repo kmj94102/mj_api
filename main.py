@@ -10,7 +10,6 @@ from model import PokemonTable, Pokemon, create_pokemon_table, \
     UpdateIsCatch, Schedule, ScheduleItem, create_schedule
 from pydantic import BaseSettings
 from datetime import datetime, timedelta
-# from dateutil.relativedelta import relativedelta
 
 class Settings(BaseSettings):
     pwd: str
@@ -136,22 +135,20 @@ async def insert_schedule_item(schedule: Schedule) -> int:
     return schedule.id
 
 async def yearly_schedule(item: ScheduleItem, id: int):
-    print("yearly")
-    # current = item.startTime + relativedelta(years=1)
-    # while current <= item.recurrenceEndDate:
-    #     item.startTime = current
-    #     item.endTime = item.endTime + relativedelta(years=1)
-    #     await insert_schedule_item(create_schedule(item, id))
-    #     current = current  + relativedelta(years=1)
+    current = item.startTime.replace(year=item.startTime.year + 1)
+    while current <= item.recurrenceEndDate:
+        item.startTime = current
+        item.endTime = item.startTime.replace(year=item.endTime.year + 1)
+        await insert_schedule_item(create_schedule(item, id))
+        current = current.replace(year=current.year + 1)
 
 async def monthly_schedule(item: ScheduleItem, id: int):
-    print("monthly")
-    # current = item.startTime + relativedelta(months=1)
-    # while current <= item.recurrenceEndDate:
-    #     item.startTime = current
-    #     item.endTime = item.endTime + relativedelta(months=1)
-    #     await insert_schedule_item(create_schedule(item, id))
-    #     current = current  + relativedelta(months=1)
+    current = item.startTime.replace(month=item.startTime.month + 1)
+    while current <= item.recurrenceEndDate:
+        item.startTime = current
+        item.endTime = item.startTime.replace(month=item.endTime.month + 1)
+        await insert_schedule_item(create_schedule(item, id))
+        current = current.replace(month=current.month + 1)
 
 async def weekly_schedule(item: ScheduleItem, id: int):
     current = item.startTime + timedelta(days = 7)
