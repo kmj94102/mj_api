@@ -11,6 +11,7 @@ from model import PokemonTable, Pokemon, create_pokemon_table, \
 from pydantic import BaseSettings
 from datetime import datetime, timedelta
 
+
 class Settings(BaseSettings):
     pwd: str
 
@@ -82,6 +83,7 @@ async def read_pokemon_image(index: int):
     return session.query(PokemonTable.number, PokemonTable.image, PokemonTable.shinyImage).filter(
         PokemonTable.index == index).first()
 
+
 # 포켓몬 잡은 상태 업데이트
 @app.post("/update/pokemon/catch")
 async def update_pokemon_is_catch(item: UpdateIsCatch):
@@ -89,6 +91,7 @@ async def update_pokemon_is_catch(item: UpdateIsCatch):
     pokemon.isCatch = item.isCatch
     session.commit()
     return f"{item.number} 업데이트 완료"
+
 
 # 특성 등록
 @app.post("/insert/char")
@@ -104,8 +107,6 @@ async def create_characteristic(item: Characteristic):
     else:
         result = f"{item.name} 이미 추가된 특성입니다."
     return result
-
-
 
 
 ######### 달력 ###########
@@ -126,6 +127,7 @@ async def insert_schedule(item: ScheduleItem):
 
     return f"{result} / {result == 5}"
 
+
 async def insert_schedule_item(schedule: Schedule) -> int:
     session.add(schedule)
     session.flush()
@@ -134,34 +136,48 @@ async def insert_schedule_item(schedule: Schedule) -> int:
 
     return schedule.id
 
+
 async def yearly_schedule(item: ScheduleItem, id: int):
     current = item.startTime.replace(year=item.startTime.year + 1)
     while current <= item.recurrenceEndDate:
         item.startTime = current
-        item.endTime = item.startTime.replace(year=item.endTime.year + 1)
+        item.endTime = item.endTime.replace(year=item.endTime.year + 1)
         await insert_schedule_item(create_schedule(item, id))
         current = current.replace(year=current.year + 1)
 
+
 async def monthly_schedule(item: ScheduleItem, id: int):
-    current = item.startTime.replace(month=item.startTime.month + 1)
+    current = next_year_month(item.startTime)
     while current <= item.recurrenceEndDate:
         item.startTime = current
-        item.endTime = item.startTime.replace(month=item.endTime.month + 1)
+        item.endTime = item.endTime.replace(year=current.year, month=current.month)
         await insert_schedule_item(create_schedule(item, id))
-        current = current.replace(month=current.month + 1)
+        current = next_year_month(current_date=current)
+
+
+def next_year_month(current_date: datetime):
+    nextMonth = current_date.month + 1
+    nextYear = current_date.year
+    if nextMonth > 12:
+        nextMonth = 1
+        nextYear += 1
+
+    return current_date.replace(year=nextYear, month=nextMonth)
+
 
 async def weekly_schedule(item: ScheduleItem, id: int):
-    current = item.startTime + timedelta(days = 7)
+    current = item.startTime + timedelta(days=7)
     while current <= item.recurrenceEndDate:
         item.startTime = current
-        item.endTime = item.endTime + timedelta(days = 7)
+        item.endTime = item.endTime + timedelta(days=7)
         await insert_schedule_item(create_schedule(item, id))
-        current = current + timedelta(days = 7)
+        current = current + timedelta(days=7)
+
 
 async def daily_schedule(item: ScheduleItem, id: int):
-    current = item.startTime + timedelta(days = 1)
+    current = item.startTime + timedelta(days=1)
     while current <= item.recurrenceEndDate:
         item.startTime = current
-        item.endTime = item.endTime + timedelta(days = 1)
+        item.endTime = item.endTime + timedelta(days=1)
         await insert_schedule_item(create_schedule(item, id))
-        current = current + timedelta(days = 1)
+        current = current + timedelta(days=1)
