@@ -98,7 +98,7 @@ class ScheduleItem(BaseModel):
     startTime: datetime
     endTime: datetime
     recurrenceType: str
-    recurrenceEndDate: datetime
+    recurrenceEndDate: Optional[datetime]
     scheduleContent: str
     scheduleTitle: str
 
