@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import aliased
 from sqlalchemy import update
@@ -114,6 +114,8 @@ async def create_characteristic(item: Characteristic):
 @app.post("/insert/schedule")
 async def insert_schedule(item: ScheduleItem):
     schedule = create_schedule(item)
+    if schedule.recurrenceType != "none" and schedule.recurrenceEndDate is None:
+        raise HTTPException(status_code=400, detail="반복 종료 일 정보가 누락되었습니다.")
     result = await insert_schedule_item(schedule)
 
     if item.recurrenceType == "yearly":
@@ -125,7 +127,7 @@ async def insert_schedule(item: ScheduleItem):
     elif item.recurrenceType == "daily":
         await daily_schedule(item, result)
 
-    return f"{result} / {result == 5}"
+    return "등록 완료"
 
 
 async def insert_schedule_item(schedule: Schedule) -> int:
