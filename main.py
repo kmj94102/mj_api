@@ -183,3 +183,21 @@ async def daily_schedule(item: ScheduleItem, id: int):
         item.endTime = item.endTime + timedelta(days=1)
         await insert_schedule_item(create_schedule(item, id))
         current = current + timedelta(days=1)
+
+@app.get("/schedule")
+async def read_schedule(year: int, month: int):
+    session.commit()
+    return session.query(Schedule).filter(
+        Schedule.startTime >= get_start_date_time(year, month),
+        Schedule.endTime <= get_last_day_time(year, month)
+    ).all()
+
+
+def get_last_day_time(year: int, month: int) -> datetime:
+    next_month = month + 1 if month < 12 else 1
+    next_year = year + 1 if month == 12 else year
+    last_day = datetime(year=next_year, month=next_month, day=1, hour=23, minute=59, second=59) - timedelta(days=1)
+    return last_day
+
+def get_start_date_time(year: int, month: int) -> datetime:
+    return datetime(year=year, month=month, day=1, hour=0, minute=0, second=0)
