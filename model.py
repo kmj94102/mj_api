@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text
 from pydantic import BaseModel
 from db import Base
 from db import ENGINE
@@ -113,6 +113,51 @@ def create_schedule(item: ScheduleItem, recurrence_id: Optional[int] = None) -> 
     schedule.recurrenceId = recurrence_id
 
     return schedule
+
+class Elsword(Base):
+    __tablename__ = 'elsword'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    characterGroup = Column(String(255))
+    line = Column(Integer)
+    classType = Column(String(255))
+    name = Column(String(255))
+    engName = Column(String(255))
+    attackType = Column(String(255))
+    story = Column(Text)
+    bigImage = Column(Text)
+    questImage = Column(Text)
+    progressImage = Column(Text)
+    circleImage = Column(Text)
+
+class ElswordItem(BaseModel):
+    characterGroup: str
+    line: int
+    classType: str
+    name: str
+    engName: str
+    attackType: str
+    story: str
+    bigImage: str
+    questImage: str
+    progressImage: str
+    circleImage: str
+
+def create_elsword(item: ElswordItem) -> Elsword:
+    elsword = Elsword()
+    elsword.characterGroup = item.characterGroup
+    elsword.line = item.line
+    elsword.classType = item.classType
+    elsword.name = item.name
+    elsword.engName = item.engName
+    elsword.attackType = item.attackType
+    elsword.story = item.story
+    elsword.bigImage = item.bigImage
+    elsword.questImage = item.questImage
+    elsword.progressImage = item.progressImage
+    elsword.circleImage = item.circleImage
+
+    return elsword
 
 def main():
     # Table 없으면 생성

@@ -7,7 +7,8 @@ from starlette.middleware.cors import CORSMiddleware
 from db import session
 from model import PokemonTable, Pokemon, create_pokemon_table, \
     CharacteristicTable, Characteristic, create_characteristic_table, \
-    UpdateIsCatch, Schedule, ScheduleItem, create_schedule
+    UpdateIsCatch, Schedule, ScheduleItem, create_schedule, \
+    Elsword, ElswordItem, create_elsword
 from pydantic import BaseSettings
 from datetime import datetime, timedelta
 
@@ -201,3 +202,11 @@ def get_last_day_time(year: int, month: int) -> datetime:
 
 def get_start_date_time(year: int, month: int) -> datetime:
     return datetime(year=year, month=month, day=1, hour=0, minute=0, second=0)
+
+@app.post("/insert/elsword")
+async def create_elsword(item: Elsword):
+    elsword = create_elsword(item)
+
+    session.add(elsword)
+    session.commit()
+    return f"{item.name} 추가 완료"
