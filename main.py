@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, load_only
 from sqlalchemy import update
 
 from starlette.middleware.cors import CORSMiddleware
@@ -225,3 +225,10 @@ async def insert_elsword_quest(item: QuestItem):
     else:
         result = f"{item.name}은 이미 등록된 퀘스트입니다."
     return result
+
+@app.get("/select/elsword/quest")
+async def read_elsword_quest():
+    session.commit()
+    allowed_fields = ["characterGroup", "name", "questImage"]
+
+    return session.query(Elsword).filter(Elsword.classType == "master").options(load_only(*allowed_fields)).all()
