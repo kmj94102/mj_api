@@ -8,7 +8,8 @@ from db import session
 from model import PokemonTable, Pokemon, create_pokemon_table, \
     CharacteristicTable, Characteristic, create_characteristic_table, \
     UpdateIsCatch, Schedule, ScheduleItem, create_schedule, \
-    Elsword, ElswordItem, create_elsword
+    Elsword, ElswordItem, create_elsword, \
+    Quest, QuestItem, create_quest
 from pydantic import BaseSettings
 from datetime import datetime, timedelta
 
@@ -210,3 +211,17 @@ async def insert_elsword(item: ElswordItem):
     session.add(elsword)
     session.commit()
     return f"{item.name} 추가 완료"
+
+@app.post("/insert/elsword/quest")
+async def insert_elsword_quest(item: QuestItem):
+    quest = create_quest(item)
+    result = ""
+
+    history = session.query(Quest).filter(Quest.name == item.name).first()
+    if history is None:
+        session.add(quest)
+        session.commit()
+        result = f"{item.name}를 등록하였습니다."
+    else:
+        result = f"{item.name}은 이미 등록된 퀘스트입니다."
+    return result
