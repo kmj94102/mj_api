@@ -204,7 +204,7 @@ def get_start_date_time(year: int, month: int) -> datetime:
     return datetime(year=year, month=month, day=1, hour=0, minute=0, second=0)
 
 @app.post("/insert/elsword")
-async def create_elsword(item: Elsword):
+async def insert_elsword(item: ElswordItem):
     elsword = create_elsword(item)
 
     session.add(elsword)
