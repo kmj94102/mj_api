@@ -6,6 +6,7 @@ from typing import List
 from typing import Optional
 from datetime import datetime
 
+
 class PokemonTable(Base):
     __tablename__ = 'pokemon'
     index = Column(Integer, primary_key=True, autoincrement=True)
@@ -39,6 +40,7 @@ class Pokemon(BaseModel):
     description: str = None
     generation: int = None
     isCatch: bool = False
+
 
 def create_pokemon_table(item: Pokemon) -> PokemonTable:
     pokemon = PokemonTable()
@@ -78,9 +80,11 @@ def create_characteristic_table(item: Characteristic) -> CharacteristicTable:
     charTable.description = item.description
     return charTable
 
+
 class UpdateIsCatch(BaseModel):
     number: str
     isCatch: bool
+
 
 class Schedule(Base):
     __tablename__ = 'schedule'
@@ -94,6 +98,7 @@ class Schedule(Base):
     scheduleTitle = Column(String(255))
     recurrenceId = Column(Integer, nullable=True)
 
+
 class ScheduleItem(BaseModel):
     startTime: datetime
     endTime: datetime
@@ -102,7 +107,8 @@ class ScheduleItem(BaseModel):
     scheduleContent: str
     scheduleTitle: str
 
-def create_schedule(item: ScheduleItem, recurrence_id: Optional[int] = None) -> Schedule :
+
+def create_schedule(item: ScheduleItem, recurrence_id: Optional[int] = None) -> Schedule:
     schedule = Schedule()
     schedule.startTime = item.startTime
     schedule.endTime = item.endTime
@@ -113,6 +119,7 @@ def create_schedule(item: ScheduleItem, recurrence_id: Optional[int] = None) -> 
     schedule.recurrenceId = recurrence_id
 
     return schedule
+
 
 class Elsword(Base):
     __tablename__ = 'elsword'
@@ -130,6 +137,7 @@ class Elsword(Base):
     progressImage = Column(Text)
     circleImage = Column(Text)
 
+
 class ElswordItem(BaseModel):
     characterGroup: str
     line: int
@@ -142,6 +150,7 @@ class ElswordItem(BaseModel):
     questImage: str
     progressImage: str
     circleImage: str
+
 
 def create_elsword(item: ElswordItem) -> Elsword:
     elsword = Elsword()
@@ -158,6 +167,7 @@ def create_elsword(item: ElswordItem) -> Elsword:
     elsword.circleImage = item.circleImage
 
     return elsword
+
 
 def main():
     # Table 없으면 생성
