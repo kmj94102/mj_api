@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import aliased, load_only
-from sqlalchemy import update
+from sqlalchemy import update, delete
 
 from starlette.middleware.cors import CORSMiddleware
 from db import session
@@ -246,3 +246,9 @@ def calculate_progress(complete: str):
     print(length)
     return (length / 56) * 100
 
+@app.post("/delete/elsword/quest")
+async def delete_elsword_quest(id: int):
+    session.execute(delete(Quest).where(Quest.id == id))
+    session.commit()
+
+    return "삭제 완료"
