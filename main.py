@@ -186,6 +186,7 @@ async def daily_schedule(item: ScheduleItem, id: int):
         await insert_schedule_item(create_schedule(item, id))
         current = current + timedelta(days=1)
 
+
 @app.get("/schedule")
 async def read_schedule(year: int, month: int):
     session.commit()
@@ -201,8 +202,10 @@ def get_last_day_time(year: int, month: int) -> datetime:
     last_day = datetime(year=next_year, month=next_month, day=1, hour=23, minute=59, second=59) - timedelta(days=1)
     return last_day
 
+
 def get_start_date_time(year: int, month: int) -> datetime:
     return datetime(year=year, month=month, day=1, hour=0, minute=0, second=0)
+
 
 @app.post("/insert/elsword")
 async def insert_elsword(item: ElswordItem):
@@ -211,6 +214,7 @@ async def insert_elsword(item: ElswordItem):
     session.add(elsword)
     session.commit()
     return f"{item.name} 추가 완료"
+
 
 @app.post("/insert/elsword/quest")
 async def insert_elsword_quest(item: QuestItem):
@@ -226,6 +230,7 @@ async def insert_elsword_quest(item: QuestItem):
         result = f"{item.name}은 이미 등록된 퀘스트입니다."
     return result
 
+
 @app.get("/select/elsword/quest")
 async def read_elsword_quest():
     session.commit()
@@ -240,11 +245,13 @@ async def read_elsword_quest():
         for item in quest
     ]
 
+
 def calculate_progress(complete: str):
     list = complete.split(",")
     length = len(list) if list[0] != "" or list[-1] != "" else 0
     print(length)
     return (length / 56) * 100
+
 
 @app.delete("/delete/elsword/quest")
 async def delete_elsword_quest(id: int):
@@ -252,3 +259,28 @@ async def delete_elsword_quest(id: int):
     session.commit()
 
     return "삭제 완료"
+
+@app.get("/select/elsword/quest/detail")
+async def read_elsword_quest_detail():
+    session.commit()
+    quest = session.query(Quest).all()
+    allowed_fields = ["characterGroup", "name", "questImage"]
+    elsword = session.query(Elsword).filter(Elsword.classType == "master").options(load_only(*allowed_fields)).all()
+
+    return [
+        {
+            "name": item.name,
+            "progress": calculate_progress(item.complete),
+            "character": [
+                {
+                    "name": char.name,
+                    "image": char.questImage,
+                    "group": char.characterGroup,
+                    "isComplete": char.name in item.complete,
+                    "isOngoing": char.name in item.ongoing
+                }
+                for char in elsword
+            ]
+        }
+        for item in quest
+    ]
