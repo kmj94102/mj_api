@@ -229,6 +229,20 @@ async def insert_elsword_quest(item: QuestItem):
 @app.get("/select/elsword/quest")
 async def read_elsword_quest():
     session.commit()
-    allowed_fields = ["characterGroup", "name", "questImage"]
+    quest = session.query(Quest).all()
 
-    return session.query(Elsword).filter(Elsword.classType == "master").options(load_only(*allowed_fields)).all()
+    return [
+        {
+            "progress": calculate_progress(item.complete),
+            "id": item.id,
+            "name": item.name
+        }
+        for item in quest
+    ]
+
+def calculate_progress(complete: str):
+    list = complete.split(",")
+    length = len(list) if list[0] != "" or list[-1] != "" else 0
+    print(length)
+    return (length / 56) * 100
+
