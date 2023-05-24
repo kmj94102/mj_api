@@ -168,6 +168,7 @@ def create_elsword(item: ElswordItem) -> Elsword:
 
     return elsword
 
+
 class Quest(Base):
     __tablename__ = 'quest'
 
@@ -177,11 +178,13 @@ class Quest(Base):
     complete = Column(Text)
     ongoing = Column(Text)
 
+
 class QuestItem(BaseModel):
     name: str
     max: int
     complete: str
     ongoing: str
+
 
 def create_quest(item: QuestItem) -> Quest:
     quest = Quest()
@@ -192,6 +195,7 @@ def create_quest(item: QuestItem) -> Quest:
 
     return quest
 
+
 class QuestProgress(Base):
     __tablename__ = 'quest_progress'
 
@@ -199,11 +203,16 @@ class QuestProgress(Base):
     quest_id = Column(Integer)
     progress = Column(Integer)
 
+
 class QuestProgressItem(BaseModel):
     quest_id: int
     progress: int
 
 
+class QuestUpdateItem(BaseModel):
+    id: int
+    name: str
+    type: str
 
 def main():
     # Table 없으면 생성

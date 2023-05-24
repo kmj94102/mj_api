@@ -9,7 +9,7 @@ from model import PokemonTable, Pokemon, create_pokemon_table, \
     CharacteristicTable, Characteristic, create_characteristic_table, \
     UpdateIsCatch, Schedule, ScheduleItem, create_schedule, \
     Elsword, ElswordItem, create_elsword, \
-    Quest, QuestItem, create_quest
+    Quest, QuestItem, create_quest, QuestUpdateItem
 from pydantic import BaseSettings
 from datetime import datetime, timedelta
 
@@ -284,3 +284,29 @@ async def read_elsword_quest_detail():
         }
         for item in quest
     ]
+
+@app.post("/update/elsword/quest")
+async def update_elsword_quest(item: QuestUpdateItem):
+    quest = session.query(Quest).filter(Quest.id == item.id).first()
+    if item.type == "complete":
+        quest.complete = add_name_to_text(quest.complete, item.name)
+    elif item.type == "ongoing":
+        quest.ongoing = add_name_to_text(quest.ongoing, item.name)
+    elif item.type == "remove":
+        quest.complete = remove_name_to_text(quest.complete, item.name)
+
+    session.commit()
+    return "업데이트 완료"
+
+def add_name_to_text(text, name):
+    if text:
+        result = f"{text},{name}"
+    else:
+        result = name
+    return result
+
+def remove_name_to_text(text, name):
+    result = text.replace(f"{name},", "").replace(f",{name}", "").replace(name, "")
+    if result.endswith(","):
+        result = result[:-1]
+    return result
