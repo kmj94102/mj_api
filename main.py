@@ -246,7 +246,7 @@ def calculate_progress(complete: str):
     print(length)
     return (length / 56) * 100
 
-@app.post("/delete/elsword/quest")
+@app.dlete("/delete/elsword/quest")
 async def delete_elsword_quest(id: int):
     session.execute(delete(Quest).where(Quest.id == id))
     session.commit()
