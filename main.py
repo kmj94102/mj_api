@@ -291,10 +291,13 @@ async def update_elsword_quest(item: QuestUpdateItem):
     quest = session.query(Quest).filter(Quest.id == item.id).first()
     if item.type == "complete":
         quest.complete = add_name_to_text(quest.complete, item.name)
+        quest.ongoing = remove_name_to_text(quest.ongoing, item.name)
     elif item.type == "ongoing":
         quest.ongoing = add_name_to_text(quest.ongoing, item.name)
+        quest.complete = remove_name_to_text(quest.complete, item.name)
     elif item.type == "remove":
         quest.complete = remove_name_to_text(quest.complete, item.name)
+        quest.ongoing = remove_name_to_text(quest.ongoing, item.name)
 
     session.commit()
     return "업데이트 완료"
