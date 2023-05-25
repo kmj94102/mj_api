@@ -269,6 +269,7 @@ async def read_elsword_quest_detail():
 
     return [
         {
+            "id": item.id,
             "name": item.name,
             "progress": calculate_progress(item.complete),
             "character": [
