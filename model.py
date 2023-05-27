@@ -86,6 +86,78 @@ class UpdateIsCatch(BaseModel):
     isCatch: bool
 
 
+class Calendar(Base):
+    __tablename__ = "calendar"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    calendarDate = Column(DateTime)
+    dateInfo = Column(String(255))
+    isHoliday = Column(Boolean)
+    isSpecialDay = Column(Boolean)
+
+
+class CalendarItem(BaseModel):
+    calendarDate: datetime
+    dateInfo: str
+    isHoliday: Optional[bool] = False
+    isSpecialDay: bool = False
+
+
+def create_calendar(item: CalendarItem) -> Calendar:
+    calendar = Calendar()
+    calendar.calendarDate = item.calendarDate
+    calendar.dateInfo = item.dateInfo
+    calendar.isHoliday = item.isHoliday
+    calendar.isSpecialDay = item.isSpecialDay
+
+    return calendar
+
+
+class Plan(Base):
+    __tablename__ = "plan"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    title = Column(String(255))
+    planDate = Column(DateTime)
+
+
+class PlanItem(BaseModel):
+    title: str
+    planDate: datetime
+
+
+def create_plan(item: PlanItem) -> Plan:
+    plan = Plan()
+    plan.title = item.title
+    plan.planDate = item.planDate
+
+    return plan
+
+
+class Task(Base):
+    __tablename__ = "task"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    planId = Column(Integer)
+    contents = Column(String(255))
+    isCompleted = Column(Boolean)
+
+
+class TaskItem(BaseModel):
+    planId: int
+    contents: str
+    isCompleted: bool
+
+
+def create_task(item: TaskItem) -> Task:
+    task = Task()
+    task.planId = item.planId
+    task.contents = item.contents
+    task.isCompleted = item.isCompleted
+
+    return task
+
+
 class Schedule(Base):
     __tablename__ = 'schedule'
 
@@ -202,17 +274,29 @@ class QuestProgress(Base):
     id = Column(Integer, primary_key=True)
     quest_id = Column(Integer)
     progress = Column(Integer)
+    name = Column(String(255))
 
 
 class QuestProgressItem(BaseModel):
     quest_id: int
     progress: int
+    name: str
+
+
+def create_init_quest_progress(id: int, name: str):
+    progress = QuestProgress()
+    progress.quest_id = id
+    progress.progress = 1
+    progress.name = name
+
+    return progress
 
 
 class QuestUpdateItem(BaseModel):
     id: int
     name: str
     type: str
+
 
 def main():
     # Table 없으면 생성

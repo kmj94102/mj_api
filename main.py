@@ -8,8 +8,12 @@ from db import session
 from model import PokemonTable, Pokemon, create_pokemon_table, \
     CharacteristicTable, Characteristic, create_characteristic_table, \
     UpdateIsCatch, Schedule, ScheduleItem, create_schedule, \
+    Calendar, CalendarItem, create_calendar,\
+    Plan, PlanItem, create_plan,\
+    Task, TaskItem, create_task,\
     Elsword, ElswordItem, create_elsword, \
-    Quest, QuestItem, create_quest, QuestUpdateItem
+    Quest, QuestItem, create_quest, QuestUpdateItem, \
+    QuestProgress, QuestProgressItem, create_init_quest_progress
 from pydantic import BaseSettings
 from datetime import datetime, timedelta
 
@@ -112,6 +116,14 @@ async def create_characteristic(item: Characteristic):
 
 
 ######### 달력 ###########
+@app.post("/insert/calendar")
+async def insert_calendar(item: CalendarItem):
+    calendar = create_calendar(item)
+    session.add(calendar)
+    session.commit()
+
+    return f"{item.dateInfo} 추가 완료"
+
 # 신규 일정 등록
 @app.post("/insert/schedule")
 async def insert_schedule(item: ScheduleItem):
@@ -194,6 +206,22 @@ async def read_schedule(year: int, month: int):
         Schedule.startTime >= get_start_date_time(year, month),
         Schedule.endTime <= get_last_day_time(year, month)
     ).all()
+
+@app.post("/insert/plan")
+async def insert_plan(item: PlanItem):
+    plan = create_plan(item)
+    session.add(plan)
+    session.commit()
+
+    return f"{item.title} 추가 완료"
+
+@app.post("/insert/task")
+async def insert_task(item: TaskItem):
+    task = create_task(item)
+    session.add(task)
+    session.commit()
+
+    return f"{item.contents} 추가 완료"
 
 
 def get_last_day_time(year: int, month: int) -> datetime:
@@ -314,3 +342,9 @@ def remove_name_to_text(text, name):
     if result.endswith(","):
         result = result[:-1]
     return result
+
+async def create_quest_progress(id, name):
+    progress = create_init_quest_progress(id, name)
+    session.add(progress)
+
+    return f"{name} 추가 완료"
