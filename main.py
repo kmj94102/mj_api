@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import aliased, load_only
+from sqlalchemy.sql import exists
 from sqlalchemy import update, delete
 
 from starlette.middleware.cors import CORSMiddleware
@@ -118,11 +119,19 @@ async def create_characteristic(item: Characteristic):
 ######### 달력 ###########
 @app.post("/insert/calendar")
 async def insert_calendar(item: CalendarItem):
-    calendar = create_calendar(item)
-    session.add(calendar)
-    session.commit()
+    calendar_date = item.calendarDate.strftime("%Y-%m-%d")
+    exists_query = session.query(Calendar).filter(
+        Calendar.calendarDate == calendar_date,
+        Calendar.dateInfo == item.dateInfo
+    ).exists()
 
-    return f"{item.dateInfo} 추가 완료"
+    if not session.query(exists_query).scalar():
+        calendar = create_calendar(item)
+        session.add(calendar)
+        session.commit()
+        return f"{item.dateInfo} 추가 완료"
+    else:
+        return f"{item.dateInfo}는 이미 추가된 정보입니다."
 
 # 신규 일정 등록
 @app.post("/insert/schedule")
