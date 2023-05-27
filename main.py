@@ -9,14 +9,15 @@ from db import session
 from model import PokemonTable, Pokemon, create_pokemon_table, \
     CharacteristicTable, Characteristic, create_characteristic_table, \
     UpdateIsCatch, Schedule, ScheduleItem, create_schedule, \
-    Calendar, CalendarItem, create_calendar,\
-    Plan, PlanItem, create_plan,\
-    Task, TaskItem, create_task,\
+    Calendar, CalendarItem, create_calendar, \
+    Plan, PlanItem, create_plan, PlanTasks, \
+    Task, TaskItem, create_task, \
     Elsword, ElswordItem, create_elsword, \
     Quest, QuestItem, create_quest, QuestUpdateItem, \
     QuestProgress, QuestProgressItem, create_init_quest_progress
 from pydantic import BaseSettings
 from datetime import datetime, timedelta
+from typing import List
 
 
 class Settings(BaseSettings):
@@ -117,6 +118,7 @@ async def create_characteristic(item: Characteristic):
 
 
 ######### 달력 ###########
+# 달력 정보 추가
 @app.post("/insert/calendar")
 async def insert_calendar(item: CalendarItem):
     calendar_date = item.calendarDate.strftime("%Y-%m-%d")
@@ -132,6 +134,61 @@ async def insert_calendar(item: CalendarItem):
         return f"{item.dateInfo} 추가 완료"
     else:
         return f"{item.dateInfo}는 이미 추가된 정보입니다."
+
+
+# 달력 정보 조회 (월 정보)
+@app.get("/select/calendar/month")
+async def read_calendar_month(year: int, month: int):
+    session.commit()
+    start_date = datetime(year, month, 1)
+    end_date = get_last_day_time(year, month)
+    current_date = start_date
+
+    result = []
+
+    while current_date < end_date:
+        format_date = current_date.strftime("%Y-%m-%d")
+        calendar_info = await read_calendar_date(format_date)
+        schedule_info = await read_schedule(current_date)
+        plan_info = await read_plans_tasks(format_date)
+
+        if calendar_info or schedule_info:
+            day_data = {
+                "date": format_date,
+                "calendarInfo": [
+                    {
+                        "calendarDate": calendar.calendarDate,
+                        "info": calendar.dateInfo,
+                        "isHoliday": calendar.isHoliday,
+                        "isSpecialDay": calendar.isSpecialDay
+                    }
+                    for calendar in calendar_info
+                ],
+                "scheduleInfo": [
+                    {
+                        "startTime": schedule.startTime,
+                        "endTime": schedule.endTime,
+                        "recurrenceType": schedule.recurrenceType,
+                        "recurrenceEndDate": schedule.recurrenceEndDate,
+                        "scheduleContent": schedule.scheduleContent,
+                        "scheduleTitle": schedule.scheduleTitle,
+                        "recurrenceId": schedule.recurrenceId
+                    }
+                    for schedule in schedule_info
+                ],
+                "planInfo": plan_info
+            }
+            result.append(day_data)
+        current_date += timedelta(days=1)
+
+    return result
+
+
+# 달력 정보 조회 (일 정보)
+@app.get("/select/calendar/date")
+async def read_calendar_date(date: str) -> List[Calendar]:
+    return session.query(Calendar).filter(Calendar.calendarDate == date).all()
+
 
 # 신규 일정 등록
 @app.post("/insert/schedule")
@@ -208,21 +265,31 @@ async def daily_schedule(item: ScheduleItem, id: int):
         current = current + timedelta(days=1)
 
 
+# 일정 조회
+
 @app.get("/schedule")
-async def read_schedule(year: int, month: int):
+async def read_schedule(date: datetime):
     session.commit()
+
     return session.query(Schedule).filter(
-        Schedule.startTime >= get_start_date_time(year, month),
-        Schedule.endTime <= get_last_day_time(year, month)
+        Schedule.startTime >= date,
+        Schedule.endTime <= date + timedelta(days=1)
     ).all()
 
-@app.post("/insert/plan")
-async def insert_plan(item: PlanItem):
-    plan = create_plan(item)
-    session.add(plan)
-    session.commit()
 
-    return f"{item.title} 추가 완료"
+@app.post("/insert/plan")
+async def insert_plan(title, date):
+    plan = Plan()
+    plan.title = title
+    plan.planDate = date
+
+    session.add(plan)
+    session.flush()
+    session.commit()
+    session.refresh(plan)
+
+    return plan.id
+
 
 @app.post("/insert/task")
 async def insert_task(item: TaskItem):
@@ -231,6 +298,39 @@ async def insert_task(item: TaskItem):
     session.commit()
 
     return f"{item.contents} 추가 완료"
+
+
+@app.post("/insert/plan-tasks")
+async def insert_plan_tasks(item: PlanTasks):
+    planId = await insert_plan(item.title, item.planDate)
+
+    print(f"\n\n\n{planId}\n\n\n")
+
+    for taskItem in item.taskList :
+        taskItem.planId = planId
+        await insert_task(taskItem)
+
+    return f"{item.title} 등록 완료"
+
+@app.get("/select/plans-tasks")
+async def read_plans_tasks(date: str):
+    plan_list = session.query(Plan).filter(Plan.planDate == date).all()
+    return [
+        {
+            "id": plan.id,
+            "planDate": plan.planDate,
+            "title": plan.title,
+            "taskList": [
+                {
+                    "id": task.id,
+                    "contents": task.contents,
+                    "isCompleted": task.isCompleted
+                }
+                for task in session.query(Task).filter(Task.planId == plan.id).all()
+            ]
+        }
+        for plan in plan_list
+    ]
 
 
 def get_last_day_time(year: int, month: int) -> datetime:
@@ -297,6 +397,7 @@ async def delete_elsword_quest(id: int):
 
     return "삭제 완료"
 
+
 @app.get("/select/elsword/quest/detail")
 async def read_elsword_quest_detail():
     session.commit()
@@ -323,6 +424,7 @@ async def read_elsword_quest_detail():
         for item in quest
     ]
 
+
 @app.post("/update/elsword/quest")
 async def update_elsword_quest(item: QuestUpdateItem):
     quest = session.query(Quest).filter(Quest.id == item.id).first()
@@ -339,6 +441,7 @@ async def update_elsword_quest(item: QuestUpdateItem):
     session.commit()
     return "업데이트 완료"
 
+
 def add_name_to_text(text, name):
     if text:
         result = f"{text},{name}"
@@ -346,11 +449,13 @@ def add_name_to_text(text, name):
         result = name
     return result
 
+
 def remove_name_to_text(text, name):
     result = text.replace(f"{name},", "").replace(f",{name}", "").replace(name, "")
     if result.endswith(","):
         result = result[:-1]
     return result
+
 
 async def create_quest_progress(id, name):
     progress = create_init_quest_progress(id, name)

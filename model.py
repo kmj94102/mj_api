@@ -157,6 +157,11 @@ def create_task(item: TaskItem) -> Task:
 
     return task
 
+class PlanTasks(BaseModel):
+    title: str
+    planDate: datetime
+    taskList: List[TaskItem]
+
 
 class Schedule(Base):
     __tablename__ = 'schedule'
