@@ -155,8 +155,9 @@ async def read_calendar_month(year: int, month: int):
         if calendar_info or schedule_info:
             day_data = {
                 "date": format_date,
-                "calendarInfo": [
+                "calendarInfoList": [
                     {
+                        "id": calendar.id,
                         "calendarDate": calendar.calendarDate,
                         "info": calendar.dateInfo,
                         "isHoliday": calendar.isHoliday,
@@ -164,8 +165,9 @@ async def read_calendar_month(year: int, month: int):
                     }
                     for calendar in calendar_info
                 ],
-                "scheduleInfo": [
+                "scheduleInfoList": [
                     {
+                        "id": schedule.id,
                         "startTime": schedule.startTime,
                         "endTime": schedule.endTime,
                         "recurrenceType": schedule.recurrenceType,
@@ -176,7 +178,7 @@ async def read_calendar_month(year: int, month: int):
                     }
                     for schedule in schedule_info
                 ],
-                "planInfo": plan_info
+                "planInfoList": plan_info
             }
             result.append(day_data)
         current_date += timedelta(days=1)
@@ -303,8 +305,6 @@ async def insert_task(item: TaskItem):
 @app.post("/insert/plan-tasks")
 async def insert_plan_tasks(item: PlanTasks):
     planId = await insert_plan(item.title, item.planDate)
-
-    print(f"\n\n\n{planId}\n\n\n")
 
     for taskItem in item.taskList :
         taskItem.planId = planId
