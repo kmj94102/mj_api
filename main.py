@@ -278,6 +278,20 @@ async def read_schedule(date: datetime):
         Schedule.endTime <= date + timedelta(days=1)
     ).all()
 
+@app.delete("/delete/schedule")
+async def delete_schedule(id: int):
+    schedule = session.query(Schedule).filter(Schedule.id == id).first()
+
+    if not schedule:
+        raise HTTPException(status_code=404, detail="존재하지 않는 id입니다.")
+
+    session.query(Schedule).filter(Schedule.recurrenceId == id).delete(synchronize_session=False)
+
+    session.delete(schedule)
+    session.commit()
+
+    return "일정을 삭제하였습니다."
+
 
 @app.post("/insert/plan")
 async def insert_plan(title, date):
@@ -311,6 +325,20 @@ async def insert_plan_tasks(item: PlanTasks):
         await insert_task(taskItem)
 
     return f"{item.title} 등록 완료"
+
+@app.delete("/delete/plan-tasks")
+async def delete_plan_tasks(id: int):
+    plan = session.query(Plan).filter(Plan.id == id).first()
+
+    if not plan:
+        raise HTTPException(status_code = 404, detail="존재하지 않는 id입니다.")
+
+    session.query(Task).filter(Task.planId == id).delete(synchronize_session=False)
+
+    session.delete(plan)
+    session.commit()
+
+    return "계획 삭제 완료"
 
 @app.get("/select/plans-tasks")
 async def read_plans_tasks(date: str):
