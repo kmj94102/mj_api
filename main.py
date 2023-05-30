@@ -147,48 +147,57 @@ async def read_calendar_month(year: int, month: int):
     result = []
 
     while current_date < end_date:
-        format_date = current_date.strftime("%Y-%m-%d")
-        calendar_info = await read_calendar_date(format_date)
-        schedule_info = await read_schedule(current_date)
-        plan_info = await read_plans_tasks(format_date)
-
-        if calendar_info or schedule_info:
-            day_data = {
-                "date": format_date,
-                "calendarInfoList": [
-                    {
-                        "id": calendar.id,
-                        "calendarDate": calendar.calendarDate,
-                        "info": calendar.dateInfo,
-                        "isHoliday": calendar.isHoliday,
-                        "isSpecialDay": calendar.isSpecialDay
-                    }
-                    for calendar in calendar_info
-                ],
-                "scheduleInfoList": [
-                    {
-                        "id": schedule.id,
-                        "startTime": schedule.startTime,
-                        "endTime": schedule.endTime,
-                        "recurrenceType": schedule.recurrenceType,
-                        "recurrenceEndDate": schedule.recurrenceEndDate,
-                        "scheduleContent": schedule.scheduleContent,
-                        "scheduleTitle": schedule.scheduleTitle,
-                        "recurrenceId": schedule.recurrenceId
-                    }
-                    for schedule in schedule_info
-                ],
-                "planInfoList": plan_info
-            }
+        day_data = await read_calendar(current_date)
+        if day_data:
             result.append(day_data)
         current_date += timedelta(days=1)
 
     return result
 
-
 # 달력 정보 조회 (일 정보)
 @app.get("/select/calendar/date")
-async def read_calendar_date(date: str) -> List[Calendar]:
+async def read_calendar_date(year: int, month: int, date: int):
+    return await read_calendar(datetime(year, month, date))
+
+
+async def read_calendar(current_date: datetime):
+    format_date = current_date.strftime("%Y-%m-%d")
+    calendar_info = await read_calendar_info(format_date)
+    schedule_info = await read_schedule(current_date)
+    plan_info = await read_plans_tasks(format_date)
+
+    if calendar_info or schedule_info or plan_info:
+        return {
+            "date": format_date,
+            "calendarInfoList": [
+                {
+                    "id": calendar.id,
+                    "calendarDate": calendar.calendarDate,
+                    "info": calendar.dateInfo,
+                    "isHoliday": calendar.isHoliday,
+                    "isSpecialDay": calendar.isSpecialDay
+                }
+                for calendar in calendar_info
+            ],
+            "scheduleInfoList": [
+                {
+                    "id": schedule.id,
+                    "startTime": schedule.startTime,
+                    "endTime": schedule.endTime,
+                    "recurrenceType": schedule.recurrenceType,
+                    "recurrenceEndDate": schedule.recurrenceEndDate,
+                    "scheduleContent": schedule.scheduleContent,
+                    "scheduleTitle": schedule.scheduleTitle,
+                    "recurrenceId": schedule.recurrenceId
+                }
+                for schedule in schedule_info
+            ],
+            "planInfoList": plan_info
+        }
+
+
+# 달력 날짜 정보 조회
+async def read_calendar_info(date: str) -> List[Calendar]:
     return session.query(Calendar).filter(Calendar.calendarDate == date).all()
 
 
@@ -278,6 +287,7 @@ async def read_schedule(date: datetime):
         Schedule.endTime <= date + timedelta(days=1)
     ).all()
 
+
 @app.delete("/delete/schedule")
 async def delete_schedule(id: int):
     schedule = session.query(Schedule).filter(Schedule.id == id).first()
@@ -320,18 +330,19 @@ async def insert_task(item: TaskItem):
 async def insert_plan_tasks(item: PlanTasks):
     planId = await insert_plan(item.title, item.planDate)
 
-    for taskItem in item.taskList :
+    for taskItem in item.taskList:
         taskItem.planId = planId
         await insert_task(taskItem)
 
     return f"{item.title} 등록 완료"
+
 
 @app.delete("/delete/plan-tasks")
 async def delete_plan_tasks(id: int):
     plan = session.query(Plan).filter(Plan.id == id).first()
 
     if not plan:
-        raise HTTPException(status_code = 404, detail="존재하지 않는 id입니다.")
+        raise HTTPException(status_code=404, detail="존재하지 않는 id입니다.")
 
     session.query(Task).filter(Task.planId == id).delete(synchronize_session=False)
 
@@ -339,6 +350,7 @@ async def delete_plan_tasks(id: int):
     session.commit()
 
     return "계획 삭제 완료"
+
 
 @app.get("/select/plans-tasks")
 async def read_plans_tasks(date: str):
