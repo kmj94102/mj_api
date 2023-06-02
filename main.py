@@ -154,6 +154,24 @@ async def read_calendar_month(year: int, month: int):
 
     return result
 
+@app.get("/select/calendar/week")
+async def read_calendar_week(start: str, end: str):
+    date_format = "%Y.%m.%d"
+    start_date = datetime.strptime(start, date_format)
+    end_date = datetime.strptime(end, date_format)
+
+    current_date = start_date
+
+    result = []
+
+    while current_date < end_date:
+        day_data = await read_calendar(current_date)
+        if day_data:
+            result.append(day_data)
+        current_date += timedelta(days=1)
+
+    return result
+
 # 달력 정보 조회 (일 정보)
 @app.get("/select/calendar/date")
 async def read_calendar_date(year: int, month: int, date: int):
