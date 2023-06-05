@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import aliased, load_only
 from sqlalchemy.sql import exists
-from sqlalchemy import update, delete
+from sqlalchemy import update, delete, text
 
 from starlette.middleware.cors import CORSMiddleware
 from db import session
@@ -14,7 +14,7 @@ from model import PokemonTable, Pokemon, create_pokemon_table, \
     Task, TaskItem, create_task, \
     Elsword, ElswordItem, create_elsword, \
     Quest, QuestItem, create_quest, QuestUpdateItem, \
-    QuestProgress, QuestProgressItem, create_init_quest_progress
+    QuestProgress, QuestProgressItem, create_init_quest_progress, QuestProgressUpdateItem
 from pydantic import BaseSettings
 from datetime import datetime, timedelta
 from typing import List
@@ -414,7 +414,6 @@ async def insert_elsword(item: ElswordItem):
 @app.post("/insert/elsword/quest")
 async def insert_elsword_quest(item: QuestItem):
     quest = create_quest(item)
-    result = ""
 
     history = session.query(Quest).filter(Quest.name == item.name).first()
     if history is None:
@@ -489,12 +488,15 @@ async def update_elsword_quest(item: QuestUpdateItem):
     if item.type == "complete":
         quest.complete = add_name_to_text(quest.complete, item.name)
         quest.ongoing = remove_name_to_text(quest.ongoing, item.name)
+        await delete_quest_progress(item.id, item.name)
     elif item.type == "ongoing":
         quest.ongoing = add_name_to_text(quest.ongoing, item.name)
         quest.complete = remove_name_to_text(quest.complete, item.name)
+        await create_quest_progress(item.id, item.name)
     elif item.type == "remove":
         quest.complete = remove_name_to_text(quest.complete, item.name)
         quest.ongoing = remove_name_to_text(quest.ongoing, item.name)
+        await delete_quest_progress(item.id, item.name)
 
     session.commit()
     return "업데이트 완료"
@@ -520,3 +522,47 @@ async def create_quest_progress(id, name):
     session.add(progress)
 
     return f"{name} 추가 완료"
+
+async def delete_quest_progress(id, name):
+    session.query(QuestProgress).filter(QuestProgress.quest_id == id, QuestProgress.name == name).delete(synchronize_session=False)
+    session.commit()
+
+    return f"{name} 삭제 완료"
+
+@app.get("/insert/elsword/counter")
+async def read_elsword_quest_progress():
+    session.commit()
+
+    sql = """
+        SELECT quest_progress.id, quest_progress.name, quest_progress.quest_id, quest_progress.progress, quest.max
+        FROM quest, quest_progress
+        WHERE quest_progress.quest_id = quest.id
+    """
+
+    result = session.execute(text(sql)).fetchall()
+
+    # 결과를 원하는 형태로 가공
+    formatted_result = [
+        {
+            "id": row[0],
+            "name": row[1],
+            "quest_id": row[2],
+            "progress": row[3],
+            "max": row[4]
+        }
+        for row in result
+    ]
+
+    return formatted_result
+
+@app.post("/update/elsword/counter")
+async def update_elsword_quest_progress(item: QuestProgressUpdateItem):
+    progressItem = session.query(QuestProgress).filter(QuestProgress.id == item.id).first()
+    progressItem.progress += 1
+    session.commit()
+
+    if progressItem.progress >= item.max:
+        await update_elsword_quest(QuestUpdateItem(id=progressItem.quest_id, name=progressItem.name, type="complete"))
+        return 0
+
+    return progressItem.progress

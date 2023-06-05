@@ -302,6 +302,10 @@ class QuestUpdateItem(BaseModel):
     name: str
     type: str
 
+class QuestProgressUpdateItem(BaseModel):
+    id: int
+    max: int
+
 
 def main():
     # Table 없으면 생성
