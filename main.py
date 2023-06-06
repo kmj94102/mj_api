@@ -529,7 +529,7 @@ async def delete_quest_progress(id, name):
 
     return f"{name} 삭제 완료"
 
-@app.get("/insert/elsword/counter")
+@app.get("/select/elsword/counter")
 async def read_elsword_quest_progress():
     session.commit()
 
@@ -541,14 +541,14 @@ async def read_elsword_quest_progress():
 
     result = session.execute(text(sql)).fetchall()
 
-    # 결과를 원하는 형태로 가공
     formatted_result = [
         {
             "id": row[0],
             "name": row[1],
             "quest_id": row[2],
             "progress": row[3],
-            "max": row[4]
+            "max": row[4],
+            "image": session.query(Elsword.progressImage).filter(Elsword.name == row[1], Elsword.classType == "master").first()[0]
         }
         for row in result
     ]
