@@ -548,7 +548,8 @@ async def read_elsword_quest_progress():
             "quest_id": row[2],
             "progress": row[3],
             "max": row[4],
-            "image": session.query(Elsword.progressImage).filter(Elsword.name == row[1], Elsword.classType == "master").first()[0]
+            "image": session.query(Elsword.progressImage).filter(Elsword.name == row[1], Elsword.classType == "master").first()[0],
+            "characterGroup": session.query(Elsword.characterGroup).filter(Elsword.name == row[1], Elsword.classType == "master").first()[0],
         }
         for row in result
     ]
