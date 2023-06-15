@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import aliased, load_only
 from sqlalchemy.sql import exists
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import update, delete, text
 
 from starlette.middleware.cors import CORSMiddleware
@@ -9,6 +10,7 @@ from db import session
 from model import PokemonTable, Pokemon, create_pokemon_table, \
     CharacteristicTable, Characteristic, create_characteristic_table, \
     UpdateIsCatch, Schedule, ScheduleItem, create_schedule, \
+    EvolutionTable, Evolution, create_evolution_table, \
     Calendar, CalendarItem, create_calendar, \
     Plan, PlanItem, create_plan, PlanTasks, \
     Task, TaskItem, create_task, \
@@ -44,9 +46,25 @@ async def root():
 
 
 ######### 포켓몬 ###########
-# 포켓몬 등록
 @app.post("/insert/pokemon")
 async def insert_pokemon(item: Pokemon):
+    """
+    포켓몬 등록
+    - **index**: 인덱스
+    - **number**: 포켓몬 번호
+    - **name**: 이름
+    - **status**: 스테이터스
+    - **classification**: 분류
+    - **characteristic**: 특성
+    - **attribute**: 속성
+    - **image**: 이미지
+    - **shinyImage**: 이로치 이미지
+    - **spotlight**: 스포트라이트
+    - **shinySpotlight**: 이로치 스포트라이트
+    - **description**: 설명
+    - **generation**: 세대
+    - **isCatch**: 잡은 여부
+    """
     data = session.query(PokemonTable).filter(PokemonTable.name == item.name).first()
     if data is None:
         pokemon = create_pokemon_table(item)
@@ -56,9 +74,14 @@ async def insert_pokemon(item: Pokemon):
     return f"{item.name} 추가 완료"
 
 
-# 포켓몬 리스트 조회
 @app.get("/pokemonList")
 async def read_pokemon_list(name: str = "", skip: int = 0, limit: int = 100):
+    """
+    포켓몬 리스트 조회
+    - **name**: 포켓몬 이름
+    - **skip**: 시작 인덱스 번호
+    - **limit**: 한번 호출 시 불러올 개수
+    """
     session.commit()
 
     list = session.query(PokemonTable.index, PokemonTable.number, PokemonTable.name, PokemonTable.spotlight,
@@ -71,9 +94,12 @@ async def read_pokemon_list(name: str = "", skip: int = 0, limit: int = 100):
     }
 
 
-# 포켓몬 상세 조회
 @app.get("/pokemon/detail/{number}")
 async def read_pokemon_detail(number: str):
+    """
+    포켓몬 상세 조회
+    - **number**: 포켓몬 번호
+    """
     pokemon = session.query(PokemonTable).filter(PokemonTable.number == number).first()
     beforeInfo = await read_pokemon_image(pokemon.index - 1)
     nextInfo = await read_pokemon_image(pokemon.index + 1)
@@ -85,26 +111,37 @@ async def read_pokemon_detail(number: str):
     }
 
 
-# 포켓몬 이미지 조회
 @app.get("/pokemon/image/{index}")
 async def read_pokemon_image(index: int):
+    """
+    포켓몬 이미지 조회
+    - **index**: 포켓몬 인덱스
+    """
     return session.query(PokemonTable.number, PokemonTable.image, PokemonTable.shinyImage).filter(
         PokemonTable.index == index).first()
 
 
-# 포켓몬 잡은 상태 업데이트
 @app.post("/update/pokemon/catch")
 async def update_pokemon_is_catch(item: UpdateIsCatch):
+    """
+    포켓몬 잡은 상태 업데이트
+    - **number**: 포켓몬 번호
+    - **isCatch**: 잡은 상태
+    """
     pokemon = session.query(PokemonTable).filter(PokemonTable.number == item.number).first()
     pokemon.isCatch = item.isCatch
     session.commit()
     return f"{item.number} 업데이트 완료"
 
 
-# 특성 등록
 @app.post("/insert/char")
 async def create_characteristic(item: Characteristic):
-    result = item.name
+    """
+    특성 등록
+    - **index**: 인덱스
+    - **name**: 이름
+    - **description**: 설명
+    """
     char = session.query(CharacteristicTable).filter(CharacteristicTable.name == item.name).first()
     if char is None:
         charTable = create_characteristic_table(item)
@@ -115,6 +152,55 @@ async def create_characteristic(item: Characteristic):
     else:
         result = f"{item.name} 이미 추가된 특성입니다."
     return result
+
+
+@app.get("/select/pokemon/brief-list/{search}")
+async def read_brief_pokemon_list(search: str):
+    """
+    포켓몬 간략한 정보 리스트 조회 (진화 추가 용도)
+    - **search**: 검색어, 숫자 형태일 경우 해당 번호의 정보 조회, 문자형일 경우 검색어에 해당하는 포켓몬 조회
+    """
+    if search.isdigit():
+        result = session.query(PokemonTable.spotlight, PokemonTable.number).filter(PokemonTable.number == search).all()
+    else:
+        result = session.query(PokemonTable.spotlight, PokemonTable.number).filter(
+            PokemonTable.name.like(f"%{search}%")).all()
+
+    return result
+
+
+@app.post("/insert/pokemon/evolution")
+async def insert_pokemon_evolutions(list: List[Evolution]):
+    """
+    포켓몬 진화 추가
+    - **numbers**: 진화에 포함된 번호들
+    - **beforeNum**: 진화 전 번호
+    - **afterNum**: 진화 후 번호
+    - **evolutionType**: 진화 타입
+    - **evolutionCondition**: 진화 조건
+    """
+    try:
+        session.begin()
+        for item in list:
+            history = session.query(EvolutionTable).filter(EvolutionTable.beforeNum == item.beforeNum,
+                                                           EvolutionTable.afterNum == item.afterNum).first()
+
+            if history is None:
+                evolution = create_evolution_table(item)
+
+                session.add(evolution)
+                session.commit()
+            else:
+                raise ValueError(f"중복 데이터 {item.beforeNum}-{item.afterNum}")
+    except ValueError as e:
+        session.rollback()
+        raise HTTPException(status_code=400, detail=f"오류가 발생하였습니다. {e}")
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise HTTPException(status_code=400, detail=f"오류가 발생하였습니다. {e}")
+    finally:
+        session.close()
+    return "데이터 추가를 완료하였습니다."
 
 
 ######### 달력 ###########
@@ -154,6 +240,7 @@ async def read_calendar_month(year: int, month: int):
 
     return result
 
+
 @app.get("/select/calendar/week")
 async def read_calendar_week(start: str, end: str):
     date_format = "%Y.%m.%d"
@@ -171,6 +258,7 @@ async def read_calendar_week(start: str, end: str):
         current_date += timedelta(days=1)
 
     return result
+
 
 # 달력 정보 조회 (일 정보)
 @app.get("/select/calendar/date")
@@ -404,6 +492,20 @@ def get_start_date_time(year: int, month: int) -> datetime:
 
 @app.post("/insert/elsword")
 async def insert_elsword(item: ElswordItem):
+    """
+    엘소드 캐릭터 정보 등록
+    - **characterGroup**: 케릭터 그룹 ex) 엘소드
+    - **line**: 전직 라인 ex) 1
+    - **classType**: 전직 등급, [first, second, third, master] 중 택 1
+    - **name**: 전직 이름
+    - **engName: 전직 영어 이름
+    - **attackType**: 공격 타입, [magic, physics] 중 택 1
+    - **story**: 전직 스토리
+    - **bigImage**: 전체 이미지
+    - **questImage**: 퀘스트 이미지 (선택)
+    - **progressImage**: 퀘스트 진행 이미지 (선택)
+    - **circleImage**: 원형 이미지
+    """
     elsword = create_elsword(item)
 
     session.add(elsword)
@@ -413,6 +515,13 @@ async def insert_elsword(item: ElswordItem):
 
 @app.post("/insert/elsword/quest")
 async def insert_elsword_quest(item: QuestItem):
+    """
+    엘소드 퀘스트 정보 등록
+    - name: 퀘스트 이름
+    - max: 퀘스트 개수
+    - complete: 퀘스트를 완료한 캐릭터 이름들
+    - ongoing: 퀘스트를 진행하고 있는 캐릭터 이름들
+    """
     quest = create_quest(item)
 
     history = session.query(Quest).filter(Quest.name == item.name).first()
@@ -427,12 +536,15 @@ async def insert_elsword_quest(item: QuestItem):
 
 @app.get("/select/elsword/quest")
 async def read_elsword_quest():
+    """
+    엘소드 퀘스트 리스트 조회
+    """
     session.commit()
     quest = session.query(Quest).all()
 
     return [
         {
-            "progress": calculate_progress(item.complete),
+            "progress": calculate_task_progress(item.complete),
             "id": item.id,
             "name": item.name
         }
@@ -440,7 +552,7 @@ async def read_elsword_quest():
     ]
 
 
-def calculate_progress(complete: str):
+def calculate_task_progress(complete: str):
     list = complete.split(",")
     length = len(list) if list[0] != "" or list[-1] != "" else 0
     print(length)
@@ -449,6 +561,10 @@ def calculate_progress(complete: str):
 
 @app.delete("/delete/elsword/quest")
 async def delete_elsword_quest(id: int):
+    """
+    엘소드 퀘스트 삭제
+    - **id**: 삭제하려고 하는 퀘스트 id
+    """
     session.execute(delete(Quest).where(Quest.id == id))
     session.commit()
 
@@ -456,7 +572,10 @@ async def delete_elsword_quest(id: int):
 
 
 @app.get("/select/elsword/quest/detail")
-async def read_elsword_quest_detail():
+async def select_elsword_quest_detail():
+    """
+    엘소드 퀘스트 상세 정보 조회
+    """
     session.commit()
     quest = session.query(Quest).all()
     allowed_fields = ["characterGroup", "name", "questImage"]
@@ -466,7 +585,7 @@ async def read_elsword_quest_detail():
         {
             "id": item.id,
             "name": item.name,
-            "progress": calculate_progress(item.complete),
+            "progress": calculate_task_progress(item.complete),
             "character": [
                 {
                     "name": char.name,
@@ -484,6 +603,12 @@ async def read_elsword_quest_detail():
 
 @app.post("/update/elsword/quest")
 async def update_elsword_quest(item: QuestUpdateItem):
+    """
+    퀘스트 상태 업데이트
+    - id: 퀘스트 id
+    - name: 캐릭터 이름
+    - type: 변경할 퀘스트 상태 [complete, ongoing, remove] 중 택 1
+    """
     quest = session.query(Quest).filter(Quest.id == item.id).first()
     if item.type == "complete":
         quest.complete = add_name_to_text(quest.complete, item.name)
@@ -502,6 +627,7 @@ async def update_elsword_quest(item: QuestUpdateItem):
     return "업데이트 완료"
 
 
+# 텍스트에 캐릭터 추가
 def add_name_to_text(text, name):
     if text:
         result = f"{text},{name}"
@@ -510,6 +636,7 @@ def add_name_to_text(text, name):
     return result
 
 
+# 텍스트에 캐릭터 삭제
 def remove_name_to_text(text, name):
     result = text.replace(f"{name},", "").replace(f",{name}", "").replace(name, "")
     if result.endswith(","):
@@ -517,26 +644,34 @@ def remove_name_to_text(text, name):
     return result
 
 
+# 퀘스트 진행 추가
 async def create_quest_progress(id, name):
     progress = create_init_quest_progress(id, name)
     session.add(progress)
 
     return f"{name} 추가 완료"
 
+
+# 퀘스트 진행 삭제
 async def delete_quest_progress(id, name):
-    session.query(QuestProgress).filter(QuestProgress.quest_id == id, QuestProgress.name == name).delete(synchronize_session=False)
+    session.query(QuestProgress).filter(QuestProgress.quest_id == id, QuestProgress.name == name).delete(
+        synchronize_session=False)
     session.commit()
 
     return f"{name} 삭제 완료"
 
+
 @app.get("/select/elsword/counter")
 async def read_elsword_quest_progress():
+    """
+    퀘스트 진행 조회
+    """
     session.commit()
 
     sql = """
-        SELECT quest_progress.id, quest_progress.name, quest_progress.quest_id, quest_progress.progress, quest.max
-        FROM quest, quest_progress
-        WHERE quest_progress.quest_id = quest.id
+        SELECT quest_progress.id, quest_progress.name, quest_progress.quest_id, quest_progress.progress, quest.max, elsword.questImage, elsword.characterGroup 
+        FROM quest, quest_progress, elsword 
+        WHERE quest_progress.quest_id = quest.id AND elsword.name = quest_progress.name and elsword.classType = 'master'
     """
 
     result = session.execute(text(sql)).fetchall()
@@ -548,16 +683,22 @@ async def read_elsword_quest_progress():
             "quest_id": row[2],
             "progress": row[3],
             "max": row[4],
-            "image": session.query(Elsword.progressImage).filter(Elsword.name == row[1], Elsword.classType == "master").first()[0],
-            "characterGroup": session.query(Elsword.characterGroup).filter(Elsword.name == row[1], Elsword.classType == "master").first()[0],
+            "image": row[5],
+            "characterGroup": row[6],
         }
         for row in result
     ]
 
     return formatted_result
 
+
 @app.post("/update/elsword/counter")
 async def update_elsword_quest_progress(item: QuestProgressUpdateItem):
+    """
+    퀘스트 상태 업데이트
+    - **id**: 퀘스트 진행 id
+    - **max**: 퀘스트 개수
+    """
     progressItem = session.query(QuestProgress).filter(QuestProgress.id == item.id).first()
     progressItem.progress += 1
     session.commit()

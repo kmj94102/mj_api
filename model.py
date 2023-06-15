@@ -60,6 +60,31 @@ def create_pokemon_table(item: Pokemon) -> PokemonTable:
 
     return pokemon
 
+class EvolutionTable(Base):
+    __tablename__ = 'evolution'
+    idx = Column(Integer, primary_key=True, autoincrement=True)
+    numbers = Column(String(100))
+    beforeNum = Column(String(45))
+    afterNum = Column(String(45))
+    evolutionType = Column(String(100))
+    evolutionCondition = Column(String(100))
+
+class Evolution(BaseModel):
+    numbers: str
+    beforeNum: str
+    afterNum: str
+    evolutionType: str
+    evolutionCondition: str
+
+def create_evolution_table(item: Evolution) -> EvolutionTable:
+    evolution = EvolutionTable()
+    evolution.numbers = item.numbers
+    evolution.beforeNum = item.beforeNum
+    evolution.afterNum = item.afterNum
+    evolution.evolutionType = item.evolutionType
+    evolution.evolutionCondition = item.evolutionCondition
+
+    return evolution
 
 class CharacteristicTable(Base):
     __tablename__ = 'characteristic'
