@@ -180,6 +180,7 @@ async def insert_pokemon_evolutions(list: List[Evolution]):
     - **evolutionCondition**: 진화 조건
     """
     try:
+        session.rollback()
         session.begin()
         for item in list:
             history = session.query(EvolutionTable).filter(EvolutionTable.beforeNum == item.beforeNum,
