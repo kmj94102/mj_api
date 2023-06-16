@@ -161,7 +161,18 @@ async def read_brief_pokemon_list(search: str):
     - **search**: 검색어, 숫자 형태일 경우 해당 번호의 정보 조회, 문자형일 경우 검색어에 해당하는 포켓몬 조회
     """
     if search.isdigit():
-        result = session.query(PokemonTable.spotlight, PokemonTable.number).filter(PokemonTable.number == search).all()
+        sql = f"""
+            SELECT *
+            FROM pokemon
+            WHERE pokemon.index >= (
+                SELECT pokemon.index
+                FROM pokemon
+                WHERE pokemon.number = {search}
+                LIMIT 1
+            )
+            LIMIT 10;
+        """
+        result = session.execute(text(sql)).fetchall()
     else:
         result = session.query(PokemonTable.spotlight, PokemonTable.number).filter(
             PokemonTable.name.like(f"%{search}%")).all()
