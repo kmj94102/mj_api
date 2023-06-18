@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy.orm import aliased, load_only
+from sqlalchemy.orm import aliased, load_only, joinedload
 from sqlalchemy.sql import exists
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import update, delete, text
@@ -104,11 +104,13 @@ async def read_pokemon_detail(number: str):
     pokemon = session.query(PokemonTable).filter(PokemonTable.number == number).first()
     beforeInfo = await read_pokemon_image(pokemon.index - 1)
     nextInfo = await read_pokemon_image(pokemon.index + 1)
+    evolutionInfo = await read_pokemon_evolution(number)
 
     return {
         "pokemonInfo": pokemon,
         "beforeInfo": beforeInfo,
-        "nextInfo": nextInfo
+        "nextInfo": nextInfo,
+        "evolutionInfo": evolutionInfo
     }
 
 
@@ -120,6 +122,19 @@ async def read_pokemon_image(index: int):
     """
     return session.query(PokemonTable.number, PokemonTable.image, PokemonTable.shinyImage).filter(
         PokemonTable.index == index).first()
+
+@app.get("/pokemon/select/evolution")
+async def read_pokemon_evolution(number: str):
+    """
+    포켓몬 진화 조회
+    - **number**: 포켓몬 번호
+    """
+    pokemon1 = aliased(PokemonTable)
+    pokemon2 = aliased(PokemonTable)
+    evolution = session.query(pokemon1.spotlight.label('beforeDot'), pokemon1.shinySpotlight.label('beforeShinyDot'), pokemon2.spotlight.label('afterDot'), pokemon2.shinySpotlight.label('afterShinyDot'), EvolutionTypeTable.image.label('evolutionImage'), EvolutionTable.evolutionCondition)\
+        .filter(EvolutionTable.numbers.like(f"%{number}%"), EvolutionTable.beforeNum == pokemon1.number, EvolutionTable.afterNum == pokemon2.number, EvolutionTypeTable.name == EvolutionTable.evolutionType).all()
+
+    return evolution
 
 
 @app.post("/update/pokemon/catch")
