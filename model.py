@@ -60,6 +60,7 @@ def create_pokemon_table(item: Pokemon) -> PokemonTable:
 
     return pokemon
 
+
 class EvolutionTable(Base):
     __tablename__ = 'evolution'
     idx = Column(Integer, primary_key=True, autoincrement=True)
@@ -69,12 +70,14 @@ class EvolutionTable(Base):
     evolutionType = Column(String(100))
     evolutionCondition = Column(String(100))
 
+
 class Evolution(BaseModel):
     numbers: str
     beforeNum: str
     afterNum: str
     evolutionType: str
     evolutionCondition: str
+
 
 def create_evolution_table(item: Evolution) -> EvolutionTable:
     evolution = EvolutionTable()
@@ -85,6 +88,26 @@ def create_evolution_table(item: Evolution) -> EvolutionTable:
     evolution.evolutionCondition = item.evolutionCondition
 
     return evolution
+
+
+class EvolutionTypeTable(Base):
+    __tablename__ = 'evolution_type'
+    name = Column(String(45), primary_key=True)
+    image = Column(Text)
+
+
+class EvolutionType(BaseModel):
+    name: str
+    image: str
+
+
+def create_evolution_type_table(item: EvolutionType):
+    evolution_type = EvolutionTypeTable()
+    evolution_type.name = item.name
+    evolution_type.image = item.image
+
+    return evolution_type
+
 
 class CharacteristicTable(Base):
     __tablename__ = 'characteristic'
@@ -181,6 +204,7 @@ def create_task(item: TaskItem) -> Task:
     task.isCompleted = item.isCompleted
 
     return task
+
 
 class PlanTasks(BaseModel):
     title: str
@@ -326,6 +350,7 @@ class QuestUpdateItem(BaseModel):
     id: int
     name: str
     type: str
+
 
 class QuestProgressUpdateItem(BaseModel):
     id: int

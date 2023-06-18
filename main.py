@@ -11,6 +11,7 @@ from model import PokemonTable, Pokemon, create_pokemon_table, \
     CharacteristicTable, Characteristic, create_characteristic_table, \
     UpdateIsCatch, Schedule, ScheduleItem, create_schedule, \
     EvolutionTable, Evolution, create_evolution_table, \
+    EvolutionTypeTable, EvolutionType, create_evolution_type_table, \
     Calendar, CalendarItem, create_calendar, \
     Plan, PlanItem, create_plan, PlanTasks, \
     Task, TaskItem, create_task, \
@@ -207,6 +208,29 @@ async def insert_pokemon_evolutions(list: List[Evolution]):
     except ValueError as e:
         session.rollback()
         raise HTTPException(status_code=400, detail=f"오류가 발생하였습니다. {e}")
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise HTTPException(status_code=400, detail=f"오류가 발생하였습니다. {e}")
+    finally:
+        session.close()
+    return "데이터 추가를 완료하였습니다."
+
+
+@app.post("/insert/pokemon/evolution-type")
+async def insert_pokemon_evolution_types(list: List[EvolutionType]):
+    """
+    포켓몬 진화 타입 추가
+    - **name**: 타입 이름
+    - **image**: 타입 이미지
+    """
+    try:
+        session.rollback()
+        session.begin()
+        for item in list:
+            evolution_type = create_evolution_type_table(item)
+
+            session.add(evolution_type)
+            session.commit()
     except SQLAlchemyError as e:
         session.rollback()
         raise HTTPException(status_code=400, detail=f"오류가 발생하였습니다. {e}")
