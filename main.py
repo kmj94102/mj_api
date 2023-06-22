@@ -720,7 +720,7 @@ async def read_elsword_quest_progress():
     session.commit()
 
     sql = """
-        SELECT quest_progress.id, quest_progress.name, quest_progress.quest_id, quest_progress.progress, quest.max, elsword.questImage, elsword.characterGroup 
+        SELECT quest_progress.id, quest_progress.name, quest_progress.quest_id, quest_progress.progress, quest.max, elsword.progressImage, elsword.characterGroup 
         FROM quest, quest_progress, elsword 
         WHERE quest_progress.quest_id = quest.id AND elsword.name = quest_progress.name and elsword.classType = 'master'
     """
