@@ -242,7 +242,8 @@ def create_schedule(item: ScheduleItem, recurrence_id: Optional[int] = None) -> 
     schedule.recurrenceEndDate = item.recurrenceEndDate
     schedule.scheduleContent = item.scheduleContent
     schedule.scheduleTitle = item.scheduleTitle
-    schedule.recurrenceId = recurrence_id
+    if recurrence_id is not None:
+        schedule.recurrenceId = recurrence_id
 
     return schedule
 
