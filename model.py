@@ -135,7 +135,7 @@ class UpdateIsCatch(BaseModel):
 
 class UpdatePokemonImage(BaseModel):
     number: str
-    image: str
+    spotlight: str
 
 
 class Calendar(Base):
