@@ -133,6 +133,10 @@ class UpdateIsCatch(BaseModel):
     number: str
     isCatch: bool
 
+class UpdatePokemonImage(BaseModel):
+    number: str
+    image: str
+
 
 class Calendar(Base):
     __tablename__ = "calendar"

@@ -9,7 +9,8 @@ from starlette.middleware.cors import CORSMiddleware
 from db import session
 from model import PokemonTable, Pokemon, create_pokemon_table, \
     CharacteristicTable, Characteristic, create_characteristic_table, \
-    UpdateIsCatch, Schedule, ScheduleItem, create_schedule, \
+    UpdateIsCatch, UpdatePokemonImage, \
+    Schedule, ScheduleItem, create_schedule, \
     EvolutionTable, Evolution, create_evolution_table, \
     EvolutionTypeTable, EvolutionType, create_evolution_type_table, \
     Calendar, CalendarItem, create_calendar, \
@@ -123,6 +124,7 @@ async def read_pokemon_image(index: int):
     return session.query(PokemonTable.number, PokemonTable.image, PokemonTable.shinyImage).filter(
         PokemonTable.index == index).first()
 
+
 @app.get("/pokemon/select/evolution")
 async def read_pokemon_evolution(number: str):
     """
@@ -131,8 +133,12 @@ async def read_pokemon_evolution(number: str):
     """
     pokemon1 = aliased(PokemonTable)
     pokemon2 = aliased(PokemonTable)
-    evolution = session.query(pokemon1.spotlight.label('beforeDot'), pokemon1.shinySpotlight.label('beforeShinyDot'), pokemon2.spotlight.label('afterDot'), pokemon2.shinySpotlight.label('afterShinyDot'), EvolutionTypeTable.image.label('evolutionImage'), EvolutionTable.evolutionCondition)\
-        .filter(EvolutionTable.numbers.like(f"%{number}%"), EvolutionTable.beforeNum == pokemon1.number, EvolutionTable.afterNum == pokemon2.number, EvolutionTypeTable.name == EvolutionTable.evolutionType).all()
+    evolution = session.query(pokemon1.spotlight.label('beforeDot'), pokemon1.shinySpotlight.label('beforeShinyDot'),
+                              pokemon2.spotlight.label('afterDot'), pokemon2.shinySpotlight.label('afterShinyDot'),
+                              EvolutionTypeTable.image.label('evolutionImage'), EvolutionTable.evolutionCondition) \
+        .filter(EvolutionTable.numbers.like(f"%{number}%"), EvolutionTable.beforeNum == pokemon1.number,
+                EvolutionTable.afterNum == pokemon2.number,
+                EvolutionTypeTable.name == EvolutionTable.evolutionType).all()
 
     return evolution
 
@@ -252,6 +258,25 @@ async def insert_pokemon_evolution_types(list: List[EvolutionType]):
     finally:
         session.close()
     return "데이터 추가를 완료하였습니다."
+
+
+@app.post("/select/pokemon/before-image-info")
+async def read_pokemon_before_imgae_info():
+    session.commit()
+    return session.query(PokemonTable.number, PokemonTable.spotlight).all()
+
+
+@app.post("/update/pokemon/image")
+async def update_pokemon_image(item: UpdatePokemonImage):
+    """
+    포켓몬 이미지 업데이트
+    - **number**: 포켓몬 번호
+    - **image**: 이미지
+    """
+    pokemon = session.query(PokemonTable).filter(PokemonTable.number == item.number).first()
+    pokemon.spotlight = item.image
+    session.commit()
+    return f"{item.number} 업데이트 완료"
 
 
 ######### 달력 ###########
