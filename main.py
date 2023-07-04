@@ -274,7 +274,7 @@ async def update_pokemon_image(item: UpdatePokemonImage):
     - **image**: 이미지
     """
     pokemon = session.query(PokemonTable).filter(PokemonTable.number == item.number).first()
-    pokemon.spotlight = item.image
+    pokemon.spotlight = item.spotlight
     session.commit()
     return f"{item.number} 업데이트 완료"
 
