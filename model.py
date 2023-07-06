@@ -342,10 +342,10 @@ class QuestProgressItem(BaseModel):
     name: str
 
 
-def create_init_quest_progress(id: int, name: str):
+def create_init_quest_progress(id: int, name: str, progress_value: Optional[int] = 1):
     progress = QuestProgress()
     progress.quest_id = id
-    progress.progress = 1
+    progress.progress = progress_value
     progress.name = name
 
     return progress
@@ -355,6 +355,7 @@ class QuestUpdateItem(BaseModel):
     id: int
     name: str
     type: str
+    progress: int
 
 
 class QuestProgressUpdateItem(BaseModel):

@@ -661,20 +661,31 @@ async def select_elsword_quest_detail():
         {
             "id": item.id,
             "name": item.name,
-            "progress": calculate_task_progress(item.complete),
+            "max": item.max,
             "character": [
                 {
                     "name": char.name,
                     "image": char.questImage,
                     "group": char.characterGroup,
                     "isComplete": char.name in item.complete,
-                    "isOngoing": char.name in item.ongoing
+                    "isOngoing": char.name in item.ongoing,
+                    "progress": get_character_progress(item.id, char.name) if char.name in item.ongoing else 0
                 }
                 for char in elsword
             ]
         }
         for item in quest
     ]
+
+
+def get_character_progress(quest_id: int, name: str):
+    try:
+        result = session.query(QuestProgress).filter(QuestProgress.quest_id == quest_id,
+                                                     QuestProgress.name == name).first().progress
+    except:
+        result = 0
+
+    return result
 
 
 @app.post("/update/elsword/quest")
@@ -693,7 +704,7 @@ async def update_elsword_quest(item: QuestUpdateItem):
     elif item.type == "ongoing":
         quest.ongoing = add_name_to_text(quest.ongoing, item.name)
         quest.complete = remove_name_to_text(quest.complete, item.name)
-        await create_quest_progress(item.id, item.name)
+        await create_quest_progress(item.id, item.name, item.progress)
     elif item.type == "remove":
         quest.complete = remove_name_to_text(quest.complete, item.name)
         quest.ongoing = remove_name_to_text(quest.ongoing, item.name)
@@ -721,8 +732,8 @@ def remove_name_to_text(text, name):
 
 
 # 퀘스트 진행 추가
-async def create_quest_progress(id, name):
-    progress = create_init_quest_progress(id, name)
+async def create_quest_progress(id, name, progress_value):
+    progress = create_init_quest_progress(id, name, progress_value)
     session.add(progress)
 
     return f"{name} 추가 완료"
