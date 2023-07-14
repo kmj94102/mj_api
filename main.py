@@ -824,3 +824,39 @@ async def insert_account_book(item: AccountBookItem):
     return f"{item.whereToUse} 등록 완료"
 
 
+@app.post("/select/summary_this_month")
+async def select_summary_this_month(config: DateConfiguration):
+    start_date = calculate_start_date(config.date, config.base_date)
+    end_date = calculate_end_date(config.date, config.base_date)
+
+    return session.query(AccountBook).filter(AccountBook.date.between(start_date, end_date)).all()
+
+
+def calculate_start_date(date: datetime, base_date: int):
+    current_month = date.month
+    current_year = date.year
+    current_day = date.day
+
+    if current_day > base_date:
+        start_date = datetime(current_year, current_month, base_date + 1)
+    elif current_month > 1:
+        start_date = datetime(current_year, current_month - 1, base_date + 1)
+    else:
+        start_date = datetime(current_year - 1, 12, base_date + 1)
+
+    return start_date
+
+
+def calculate_end_date(date: datetime, base_date: int):
+    current_month = date.month
+    current_year = date.year
+    current_day = date.day
+
+    if current_day <= base_date:
+        end_date = datetime(current_year, current_month, base_date)
+    elif current_month < 12:
+        end_date = datetime(current_year, current_month + 1, base_date)
+    else:
+        end_date = datetime(current_year + 1, 1, base_date)
+
+    return end_date
