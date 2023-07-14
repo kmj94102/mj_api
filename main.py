@@ -18,10 +18,13 @@ from model import PokemonTable, Pokemon, create_pokemon_table, \
     Task, TaskItem, create_task, \
     Elsword, ElswordItem, create_elsword, \
     Quest, QuestItem, create_quest, QuestUpdateItem, \
-    QuestProgress, QuestProgressItem, create_init_quest_progress, QuestProgressUpdateItem
+    QuestProgress, QuestProgressItem, create_init_quest_progress, QuestProgressUpdateItem, \
+    AccountBook, AccountBookItem, create_account_book, DateConfiguration
+
 from pydantic import BaseSettings
 from datetime import datetime, timedelta
 from typing import List
+from datetime import datetime
 
 
 class Settings(BaseSettings):
@@ -795,3 +798,29 @@ async def update_elsword_quest_progress(item: QuestProgressUpdateItem):
         return 0
 
     return progressItem.progress
+
+
+########## 가계부
+@app.post("/insert/account_book")
+async def insert_account_book(item: AccountBookItem):
+    """
+    가계부 등록
+
+    param
+    - **date**: 사용일
+    - **dateOfWeek**: 사용 요일
+    - **amount**: 금액
+    - **usageType**: 사용 타입
+    - **whereToUse**: 사용 내용
+    """
+    data = session.query(AccountBook).filter(AccountBook.date == item.date, AccountBook.whereToUse == item.whereToUse,
+                                             AccountBook.amount == item.amount).first()
+
+    if data is None:
+        account_book = create_account_book(item)
+        session.add(account_book)
+        session.commit()
+
+    return f"{item.whereToUse} 등록 완료"
+
+

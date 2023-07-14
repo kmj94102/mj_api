@@ -363,6 +363,43 @@ class QuestProgressUpdateItem(BaseModel):
     max: int
 
 
+class AccountBook(Base):
+    __tablename__ = 'account_book'
+
+    id = Column(Integer, primary_key=True)
+    date = Column(DateTime)
+    dateOfWeek = Column(String(50))
+    amount = Column(Integer)
+    usageType = Column(String(100))
+    whereToUse = Column(Text)
+
+
+class AccountBookItem(BaseModel):
+    id: int
+    date: datetime
+    dateOfWeek: str
+    amount: int
+    usageType: str
+    whereToUse: str
+
+
+def create_account_book(item: AccountBookItem) -> AccountBook:
+    accountBook = AccountBook()
+    accountBook.id = item.id
+    accountBook.date = item.date
+    accountBook.dateOfWeek = item.dateOfWeek
+    accountBook.amount = item.amount
+    accountBook.usageType = item.usageType
+    accountBook.whereToUse = item.whereToUse
+
+    return accountBook
+
+
+class DateConfiguration(BaseModel):
+    date: datetime
+    base_date: int
+
+
 def main():
     # Table 없으면 생성
     Base.metadata.create_all(bind=ENGINE)
