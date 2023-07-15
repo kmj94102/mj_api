@@ -801,7 +801,7 @@ async def update_elsword_quest_progress(item: QuestProgressUpdateItem):
 
 
 ########## 가계부
-@app.post("/insert/account_book")
+@app.post("/insert/accountBook")
 async def insert_account_book(item: AccountBookItem):
     """
     가계부 등록
@@ -822,14 +822,6 @@ async def insert_account_book(item: AccountBookItem):
         session.commit()
 
     return f"{item.whereToUse} 등록 완료"
-
-
-@app.post("/select/summary_this_month")
-async def select_summary_this_month(config: DateConfiguration):
-    start_date = calculate_start_date(config.date, config.base_date)
-    end_date = calculate_end_date(config.date, config.base_date)
-
-    return session.query(AccountBook).filter(AccountBook.date.between(start_date, end_date)).all()
 
 
 def calculate_start_date(date: datetime, base_date: int):
@@ -860,3 +852,59 @@ def calculate_end_date(date: datetime, base_date: int):
         end_date = datetime(current_year + 1, 1, base_date)
 
     return end_date
+
+
+async def select_account_book_this_month(config: DateConfiguration):
+    session.commit()
+
+    start_date = calculate_start_date(config.date, config.base_date)
+    end_date = calculate_end_date(config.date, config.base_date)
+
+    data = session.query(AccountBook).filter(AccountBook.date.between(start_date, end_date)).all()
+
+    return {
+        "startDate": start_date,
+        "endDate": end_date,
+        "list": data
+    }
+
+
+@app.post("/select/accountBook/summaryThisMonth")
+async def select_account_summary_this_month(config: DateConfiguration):
+    income = 0
+    expenditure = 0
+
+    month_info = await select_account_book_this_month(config)
+
+    for item in month_info["list"]:
+        if item.amount > 0:
+            income += item.amount
+        elif item.amount < 0:
+            expenditure += item.amount
+
+    return {
+        "startDate": month_info["startDate"],
+        "endDate": month_info["endDate"],
+        "income": income,
+        "expenditure": expenditure,
+        "difference": expenditure + income
+    }
+
+
+@app.post("/select/accountBook/thisMonthDetail")
+async def select_account_this_month_detail(config: DateConfiguration):
+    income = 0
+    expenditure = 0
+
+    month_info = await select_account_book_this_month(config)
+
+    for item in month_info["list"]:
+        if item.amount > 0:
+            income += item.amount
+        elif item.amount < 0:
+            expenditure += item.amount
+
+    month_info["income"] = income
+    month_info["expenditure"] = expenditure
+
+    return month_info
