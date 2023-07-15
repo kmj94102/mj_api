@@ -857,8 +857,8 @@ def calculate_end_date(date: datetime, base_date: int):
 async def select_account_book_this_month(config: DateConfiguration):
     session.commit()
 
-    start_date = calculate_start_date(config.date, config.base_date)
-    end_date = calculate_end_date(config.date, config.base_date)
+    start_date = calculate_start_date(config.date, config.baseDate)
+    end_date = calculate_end_date(config.date, config.baseDate)
 
     data = session.query(AccountBook).filter(AccountBook.date.between(start_date, end_date)).all()
 

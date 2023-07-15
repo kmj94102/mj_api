@@ -397,7 +397,7 @@ def create_account_book(item: AccountBookItem) -> AccountBook:
 
 class DateConfiguration(BaseModel):
     date: datetime
-    base_date: int
+    baseDate: int
 
 
 def main():
