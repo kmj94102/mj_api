@@ -133,6 +133,7 @@ class UpdateIsCatch(BaseModel):
     number: str
     isCatch: bool
 
+
 class UpdatePokemonImage(BaseModel):
     number: str
     spotlight: str
@@ -383,7 +384,17 @@ class AccountBookItem(BaseModel):
     whereToUse: str
 
 
-def create_account_book(item: AccountBookItem) -> AccountBook:
+class AccountBookInsertItem(BaseModel):
+    id: int
+    date: datetime
+    dateOfWeek: str
+    amount: int
+    usageType: str
+    whereToUse: str
+    isAddFrequently: bool
+
+
+def create_account_book(item: AccountBookInsertItem) -> AccountBook:
     accountBook = AccountBook()
     accountBook.id = item.id
     accountBook.date = item.date
@@ -398,6 +409,61 @@ def create_account_book(item: AccountBookItem) -> AccountBook:
 class DateConfiguration(BaseModel):
     date: datetime
     baseDate: int
+
+
+class FrequentlyAccountBook(Base):
+    __tablename__ = "frequently_account_book"
+
+    id = Column(Integer, primary_key=True)
+    amount = Column(Integer)
+    usageType = Column(String(100))
+    whereToUse = Column(Text)
+
+
+class FrequentlyAccountBookItem(BaseModel):
+    id: int
+    amount: int
+    usageType: str
+    whereToUse: str
+
+
+def create_frequently_account_book(item: AccountBookInsertItem) -> FrequentlyAccountBook:
+    frequentlyAccountBook = FrequentlyAccountBook()
+    frequentlyAccountBook.id = item.id
+    frequentlyAccountBook.amount = item.amount
+    frequentlyAccountBook.usageType = item.usageType
+    frequentlyAccountBook.whereToUse = item.whereToUse
+
+    return frequentlyAccountBook
+
+
+class FixedAccountBook(Base):
+    __tablename__ = "fixed_account_book"
+
+    id = Column(Integer, primary_key=True)
+    date = Column(DateTime)
+    amount = Column(Integer)
+    usageType = Column(String(100))
+    whereToUse = Column(Text)
+
+
+class FixedAccountBookItem(BaseModel):
+    id: int
+    date: datetime
+    amount: int
+    usageType: str
+    whereToUse: str
+
+
+def create_fixed_account_book(item: FixedAccountBookItem) -> FixedAccountBook:
+    fixedAccountBook = FixedAccountBook()
+    fixedAccountBook.id = item.id
+    fixedAccountBook.date = item.date
+    fixedAccountBook.amount = item.amount
+    fixedAccountBook.usageType = item.usageType
+    fixedAccountBook.whereToUse = item.whereToUse
+
+    return fixedAccountBook
 
 
 def main():

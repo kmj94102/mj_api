@@ -19,7 +19,9 @@ from model import PokemonTable, Pokemon, create_pokemon_table, \
     Elsword, ElswordItem, create_elsword, \
     Quest, QuestItem, create_quest, QuestUpdateItem, \
     QuestProgress, QuestProgressItem, create_init_quest_progress, QuestProgressUpdateItem, \
-    AccountBook, AccountBookItem, create_account_book, DateConfiguration
+    AccountBook, AccountBookItem, create_account_book, DateConfiguration, AccountBookInsertItem, \
+    FrequentlyAccountBook, FrequentlyAccountBookItem, create_frequently_account_book, \
+    FixedAccountBook, FixedAccountBookItem, create_fixed_account_book
 
 from pydantic import BaseSettings
 from datetime import datetime, timedelta
@@ -802,7 +804,7 @@ async def update_elsword_quest_progress(item: QuestProgressUpdateItem):
 
 ########## 가계부
 @app.post("/insert/accountBook")
-async def insert_account_book(item: AccountBookItem):
+async def insert_account_book(item: AccountBookInsertItem):
     """
     가계부 등록
 
@@ -820,6 +822,9 @@ async def insert_account_book(item: AccountBookItem):
         account_book = create_account_book(item)
         session.add(account_book)
         session.commit()
+
+    if item.isAddFrequently:
+        await insert_frequently_account_book(create_frequently_account_book(item))
 
     return f"{item.whereToUse} 등록 완료"
 
@@ -909,3 +914,29 @@ async def select_account_this_month_detail(config: DateConfiguration):
     month_info["expenditure"] = expenditure
 
     return month_info
+
+
+@app.post("/insert/accountBook/frequently")
+async def insert_frequently_account_book(item: FrequentlyAccountBookItem):
+    data = session.query(FrequentlyAccountBook).filter(FrequentlyAccountBook.whereToUse == item.whereToUse,
+                                                       FrequentlyAccountBook.amount == item.amount).first()
+
+    if data is None:
+        frequently = create_frequently_account_book(item)
+        session.add(frequently)
+        session.commit()
+
+    return f"{item.whereToUse} 추가 완료"
+
+
+@app.post("/insert/accountBook/fixed")
+async def insert_fixed_account_book(item: FixedAccountBookItem):
+    data = session.query(FixedAccountBook).filter(FixedAccountBook.whereToUse == item.whereToUse,
+                                                  FixedAccountBook.amount == item.amount).first()
+
+    if data is None:
+        fixed = create_frequently_account_book(item)
+        session.add(fixed)
+        session.commit()
+
+    return f"{item.whereToUse} 추가 완료"
