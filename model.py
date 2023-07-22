@@ -441,7 +441,7 @@ class FixedAccountBook(Base):
     __tablename__ = "fixed_account_book"
 
     id = Column(Integer, primary_key=True)
-    date = Column(DateTime)
+    date = Column(String(10))
     amount = Column(Integer)
     usageType = Column(String(100))
     whereToUse = Column(Text)
@@ -449,7 +449,7 @@ class FixedAccountBook(Base):
 
 class FixedAccountBookItem(BaseModel):
     id: int
-    date: datetime
+    date: str
     amount: int
     usageType: str
     whereToUse: str

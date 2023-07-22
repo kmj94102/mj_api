@@ -4,6 +4,7 @@ from sqlalchemy.orm import aliased, load_only, joinedload
 from sqlalchemy.sql import exists
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import update, delete, text
+from sqlalchemy import func
 
 from starlette.middleware.cors import CORSMiddleware
 from db import session
@@ -897,6 +898,74 @@ async def select_account_summary_this_month(config: DateConfiguration):
     }
 
 
+@app.post("/select/accountBook/lastMonthAnalysis")
+async def select_last_month_analysis(config: DateConfiguration):
+    session.commit()
+
+    date = config.date
+    lastMonth = datetime(date.year, date.month - 1, date.day)
+
+    date_format = "%Y.%m.%d"
+    start_date = calculate_start_date(lastMonth, config.baseDate)
+    end_date = calculate_end_date(lastMonth, config.baseDate)
+
+    result = session.query(
+        AccountBook.usageType,
+        func.sum(AccountBook.amount).label("amount")
+    ).filter(
+        AccountBook.date >= start_date,
+        AccountBook.date <= end_date
+    ).group_by(
+        AccountBook.usageType
+    ).order_by(
+        func.sum(AccountBook.amount).desc()
+    ).all()
+
+    return {
+        "start": start_date.strftime("%Y.%m.%d"),
+        "end": end_date.strftime("%Y.%m.%d"),
+        "result": result
+    }
+
+
+@app.post("/select/accountBook/thisYearSummary")
+async def select_this_year_summary(config: DateConfiguration):
+    date_ranges = []
+    currentDate = config.date
+
+    for month in range(1, 13):
+        start_date = calculate_start_date(datetime(currentDate.year, month, currentDate.day), config.baseDate)
+        end_date = calculate_end_date(datetime(currentDate.year, month, currentDate.day), config.baseDate)
+        info = session.query(
+            func.sum(AccountBook.amount).label("amount")
+        ).filter(
+            AccountBook.date >= start_date,
+            AccountBook.date <= end_date
+        ).first()
+
+        if info["amount"] is None:
+            sum = 0
+        else:
+            sum = info["amount"]
+
+        date_ranges.append({"month": end_date.month, "startDate": start_date.strftime("%Y.%m.%d"),
+                            "endDate": end_date.strftime("%Y.%m.%d"), "info": sum})
+        date = start_date
+    return date_ranges
+
+
+@app.post("/select/accountBook/info")
+async def select_account_book(config: DateConfiguration):
+    this_month = await select_account_summary_this_month(config)
+    last_month = await select_last_month_analysis(config)
+    this_year = await select_this_year_summary(config)
+    return {
+        "thisMonthSummary": this_month,
+        "lastMonthAnalysis": last_month,
+        "thisYearSummary": this_year
+    }
+
+
 @app.post("/select/accountBook/thisMonthDetail")
 async def select_account_this_month_detail(config: DateConfiguration):
     income = 0
@@ -940,3 +1009,8 @@ async def insert_fixed_account_book(item: FixedAccountBookItem):
         session.commit()
 
     return f"{item.whereToUse} 추가 완료"
+
+
+@app.post("/select/accountBook/fixed")
+async def select_fixed_account_book():
+    return session.query(FixedAccountBook).all()
