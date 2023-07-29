@@ -82,6 +82,13 @@ async def insert_pokemon(item: Pokemon):
     return f"{item.name} 추가 완료"
 
 
+@app.get("/pokemon")
+async def read_pokemon_with_number(number: str):
+    session.commit()
+
+    return session.query(PokemonTable).filter(PokemonTable.number == number).first()
+
+
 @app.get("/pokemonList")
 async def read_pokemon_list(name: str = "", skip: int = 0, limit: int = 100):
     """
