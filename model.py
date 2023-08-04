@@ -445,6 +445,7 @@ class FixedAccountBook(Base):
     amount = Column(Integer)
     usageType = Column(String(100))
     whereToUse = Column(Text)
+    isIncome = Column(Boolean)
 
 
 class FixedAccountBookItem(BaseModel):
@@ -453,6 +454,7 @@ class FixedAccountBookItem(BaseModel):
     amount: int
     usageType: str
     whereToUse: str
+    isIncome: bool
 
 
 def create_fixed_account_book(item: FixedAccountBookItem) -> FixedAccountBook:
@@ -462,6 +464,7 @@ def create_fixed_account_book(item: FixedAccountBookItem) -> FixedAccountBook:
     fixedAccountBook.amount = item.amount
     fixedAccountBook.usageType = item.usageType
     fixedAccountBook.whereToUse = item.whereToUse
+    fixedAccountBook.isIncome = item.isIncome
 
     return fixedAccountBook
 
