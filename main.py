@@ -1011,7 +1011,7 @@ async def insert_fixed_account_book(item: FixedAccountBookItem):
                                                   FixedAccountBook.amount == item.amount).first()
 
     if data is None:
-        fixed = create_frequently_account_book(item)
+        fixed = create_fixed_account_book(item)
         session.add(fixed)
         session.commit()
 
