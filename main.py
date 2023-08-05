@@ -1018,6 +1018,17 @@ async def insert_fixed_account_book(item: FixedAccountBookItem):
     return f"{item.whereToUse} 추가 완료"
 
 
+@app.delete("/delete/accountBook/fixed")
+async def delete_fixed_account_book(id: int):
+    fixed = session.query(FixedAccountBook).filter(FixedAccountBook.id == id).first()
+
+    if not schedule:
+        raise HTTPException(status_code=404, detail="존재하지 않는 id입니다.")
+
+    session.query(FixedAccountBook).filter(FixedAccountBook.id == id).delete(synchronize_session=False)
+    session.commit()
+
+
 @app.post("/select/accountBook/fixed")
 async def select_fixed_account_book():
     return session.query(FixedAccountBook).all()
