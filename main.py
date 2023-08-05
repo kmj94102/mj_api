@@ -1022,7 +1022,7 @@ async def insert_fixed_account_book(item: FixedAccountBookItem):
 async def delete_fixed_account_book(id: int):
     fixed = session.query(FixedAccountBook).filter(FixedAccountBook.id == id).first()
 
-    if not schedule:
+    if not fixed:
         raise HTTPException(status_code=404, detail="존재하지 않는 id입니다.")
 
     session.query(FixedAccountBook).filter(FixedAccountBook.id == id).delete(synchronize_session=False)
