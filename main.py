@@ -148,6 +148,7 @@ async def read_pokemon_evolution(number: str):
     pokemon2 = aliased(PokemonTable)
     evolution = session.query(pokemon1.spotlight.label('beforeDot'), pokemon1.shinySpotlight.label('beforeShinyDot'),
                               pokemon2.spotlight.label('afterDot'), pokemon2.shinySpotlight.label('afterShinyDot'),
+                              pokemon1.number.label('beforeNumber'), pokemon2.number.label('afterNumber'),
                               EvolutionTypeTable.image.label('evolutionImage'), EvolutionTable.evolutionCondition) \
         .filter(EvolutionTable.numbers.like(f"%{number}%"), EvolutionTable.beforeNum == pokemon1.number,
                 EvolutionTable.afterNum == pokemon2.number,
