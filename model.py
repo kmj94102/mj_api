@@ -469,6 +469,11 @@ def create_fixed_account_book(item: FixedAccountBookItem) -> FixedAccountBook:
     return fixedAccountBook
 
 
+class HomeParam(BaseModel):
+    startDate: str
+    endDate: str
+
+
 def main():
     # Table 없으면 생성
     Base.metadata.create_all(bind=ENGINE)

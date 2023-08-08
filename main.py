@@ -22,7 +22,8 @@ from model import PokemonTable, Pokemon, create_pokemon_table, \
     QuestProgress, QuestProgressItem, create_init_quest_progress, QuestProgressUpdateItem, \
     AccountBook, AccountBookItem, create_account_book, DateConfiguration, AccountBookInsertItem, \
     FrequentlyAccountBook, FrequentlyAccountBookItem, create_frequently_account_book, \
-    FixedAccountBook, FixedAccountBookItem, create_fixed_account_book
+    FixedAccountBook, FixedAccountBookItem, create_fixed_account_book, \
+    HomeParam
 
 from pydantic import BaseSettings
 from datetime import datetime, timedelta
@@ -51,6 +52,17 @@ settings = Settings()
 @app.get("/")
 async def root():
     return {"message": settings.pwd}
+
+
+@app.post("/select/homeInfo")
+async def select_home_info(param: HomeParam):
+    calendar = await read_calendar_week(param.startDate, param.endDate)
+    quest = await read_elsword_quest_progress()
+
+    return {
+        "calendarInfo": calendar,
+        "questInfo": quest
+    }
 
 
 ######### 포켓몬 ###########
