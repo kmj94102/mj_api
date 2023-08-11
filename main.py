@@ -1041,6 +1041,17 @@ async def select_fixed_account_book():
     return session.query(FixedAccountBook).all()
 
 
+@app.delete("/delete/accountBook/frequently")
+async def delete_frequently_account_book(id: int):
+    frequently = session.query(FrequentlyAccountBook).filter(FrequentlyAccountBook.id == id).first()
+
+    if not frequently:
+        raise HTTPException(status_code=404, detail="존재하지 않는 id입니다.")
+
+    session.delete(frequently)
+    session.commit()
+
+
 @app.post("/select/accountBook/frequently")
 async def select_frequently_account_book():
     return session.query(FrequentlyAccountBook).all()
