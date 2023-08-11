@@ -362,12 +362,6 @@ async def read_calendar_week(start: str, end: str):
     return result
 
 
-# 달력 정보 조회 (일 정보)
-@app.get("/select/calendar/date")
-async def read_calendar_date(year: int, month: int, date: int):
-    return await read_calendar(datetime(year, month, date))
-
-
 async def read_calendar(current_date: datetime):
     format_date = current_date.strftime("%Y-%m-%d")
     calendar_info = await read_calendar_info(format_date)
@@ -1045,3 +1039,8 @@ async def delete_fixed_account_book(id: int):
 @app.post("/select/accountBook/fixed")
 async def select_fixed_account_book():
     return session.query(FixedAccountBook).all()
+
+
+@app.post("/select/accountBook/frequently")
+async def select_frequently_account_book():
+    return session.query(FrequentlyAccountBook).all()
