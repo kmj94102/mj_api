@@ -16,7 +16,7 @@ from model import PokemonTable, Pokemon, create_pokemon_table, \
     EvolutionTypeTable, EvolutionType, create_evolution_type_table, \
     Calendar, CalendarItem, create_calendar, \
     Plan, PlanItem, create_plan, PlanTasks, \
-    Task, TaskItem, create_task, \
+    Task, TaskItem, create_task, TaskUpdateItem, \
     Elsword, ElswordItem, create_elsword, \
     Quest, QuestItem, create_quest, QuestUpdateItem, \
     QuestProgress, QuestProgressItem, create_init_quest_progress, QuestProgressUpdateItem, \
@@ -526,6 +526,15 @@ async def insert_task(item: TaskItem):
     session.commit()
 
     return f"{item.contents} 추가 완료"
+
+
+@app.post("/update/task")
+async def update_task(item: TaskUpdateItem):
+    task = session.query(Task).filter(Task.id == item.id).first()
+    task.isCompleted = item.isCompleted
+    session.commit()
+
+    return "업데이트 완료"
 
 
 @app.post("/insert/plan-tasks")
