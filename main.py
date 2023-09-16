@@ -29,7 +29,7 @@ from pydantic import BaseSettings
 from datetime import datetime, timedelta
 from typing import List
 from datetime import datetime
-from api import test, pokemon
+from api import pokemon
 
 
 class Settings(BaseSettings):
