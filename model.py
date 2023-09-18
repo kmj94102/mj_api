@@ -479,6 +479,66 @@ class HomeParam(BaseModel):
     endDate: str
 
 
+class VocabularyTable(Base):
+    __tablename__ = "vocabulary"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    day = Column(Integer)
+    group = Column(String(50))
+    word = Column(String(150))
+    meaning = Column(Text)
+    hint = Column(Text)
+    additional = Column(Text)
+
+
+class Vocabulary(BaseModel):
+    day: int
+    group: str
+    word: str
+    meaning: str
+    hint: str
+    additional: str
+
+
+def create_vocabulary(item: Vocabulary) -> VocabularyTable:
+    vocabulary = VocabularyTable()
+    vocabulary.day = item.day
+    vocabulary.group = item.group
+    vocabulary.word = item.word
+    vocabulary.meaning = item.meaning
+    vocabulary.hint = item.hint
+    vocabulary.additional = item.additional
+
+    return vocabulary
+
+
+class WordGroupTable(Base):
+    __tablename__ = "word_group"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    day = Column(Integer)
+    name = Column(String(50))
+    meaning = Column(Text)
+    modify = Column(Text)
+
+
+class WordGroup(BaseModel):
+    day: int
+    name: str
+    meaning: str
+    modify: str
+
+
+def create_word_group(item: WordGroup) -> WordGroupTable:
+    wordGroup = WordGroupTable()
+    wordGroup.day = item.day
+    wordGroup.name = item.name
+    wordGroup.meaning = item.meaning
+    wordGroup.modify = item.modify
+
+    return wordGroup
+
+
 def main():
     # Table 없으면 생성
     Base.metadata.create_all(bind=ENGINE)
