@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="style.css"/>
+        <script src="network.js"></script>
+    </head>
+    <body>
+        <div class="box">
+            <span class="borderLine"></span>
+            <div class="form">
+                <h2>단어 그룹</h2>
+                <div class="inputBox">
+                    <input type="text" required="required" id="day">
+                    <span>날짜</span>
+                    <i></i>
+                </div>
+                <div class="inputBox">
+                    <input type="text" required="required" id="group">
+                    <span>단어 그룹 이름</span>
+                    <i></i>
+                </div>
+                <div class="inputBox">
+                    <input type="text" required="required" id="modify">
+                    <span>변형</span>
+                    <i></i>
+                </div>
+                <div class="inputBox">
+                    <input type="text" required="required" id="groupMeaning">
+                    <span>뜻</span>
+                    <i></i>
+                </div>
+
+                <input type="submit" value="단어 그룹 등록" id="submitGroup">
+            </div>
+        </div>
+        <span class="spacer"></span>
+        <div class="box">
+            <span class="borderLine"></span>
+            <div class="form">
+                <h2>영단어</h2>
+                <div class="inputBox">
+                    <input type="text" required="required" id="word">
+                    <span>단어</span>
+                    <i></i>
+                </div>
+                <div class="inputBox">
+                    <input type="text" required="required" id="wordMeaning">
+                    <span>뜻</span>
+                    <i></i>
+                </div>
+                <div class="inputBox">
+                    <input type="text" required="required" id="hint">
+                    <span>힌트</span>
+                    <i></i>
+                </div>
+                <div class="inputBox">
+                    <input type="text" required="required" id="additional">
+                    <span>추가</span>
+                    <i></i>
+                </div>
+
+                <input type="submit" value="영단어 등록" id="submitWord">
+            </div>
+        </div>
+        <div id="toast"></div>
+    </body>
+</html>
