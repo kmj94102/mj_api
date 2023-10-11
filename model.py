@@ -539,6 +539,10 @@ def create_word_group(item: WordGroup) -> WordGroupTable:
     return wordGroup
 
 
+class DayParam(BaseModel):
+    day: int
+
+
 def main():
     # Table 없으면 생성
     Base.metadata.create_all(bind=ENGINE)

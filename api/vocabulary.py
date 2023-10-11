@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from db import session
 from model import VocabularyTable, Vocabulary, create_vocabulary, \
-    WordGroupTable, WordGroup, create_word_group
+    WordGroupTable, WordGroup, create_word_group, DayParam
 from typing import List
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -35,10 +35,44 @@ async def insert_vocabulary(item: Vocabulary):
 
 
 @router.post("/select")
-async def select_vocabulary():
+async def select_vocabulary(item: DayParam):
     session.commit()
+    wordGroupList = session.query(WordGroupTable).filter(WordGroupTable.day == item.day).all()
 
-    return session.query(VocabularyTable).all()
+    result_data = {"result": []}
+
+    for word in wordGroupList:
+        wordInfo = {
+            "wordGroup": {
+                "modify": word.modify,
+                "day": word.day,
+                "name": word.name,
+                "meaning": word.meaning,
+                "id": word.id
+            },
+            "list": []
+        }
+
+        vocabularyList = session.query(VocabularyTable).filter(VocabularyTable.group == word.name,
+                                                                  VocabularyTable.day == word.day).all()
+        for vocabulary in vocabularyList:
+            vocabularyInfo = {
+                "meaning": vocabulary.meaning,
+                "day": vocabulary.day,
+                "group": vocabulary.group,
+                "hint": vocabulary.hint,
+                "id": vocabulary.id,
+                "word": vocabulary.word,
+                "additional": vocabulary.additional
+            }
+
+            wordInfo["list"].append(vocabularyInfo)
+
+        result_data["result"].append(wordInfo)
+
+    return {
+        "result": result_data
+    }
 
 
 @router.post("/group/insert")
