@@ -70,9 +70,7 @@ async def select_vocabulary(item: DayParam):
 
         result_data["result"].append(wordInfo)
 
-    return {
-        "result": result_data
-    }
+    return result_data
 
 
 @router.post("/group/insert")
