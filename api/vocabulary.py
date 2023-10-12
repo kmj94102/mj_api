@@ -7,6 +7,7 @@ from typing import List
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import aliased
 from sqlalchemy import update, delete, text
+from sqlalchemy.sql import func
 
 router = APIRouter()
 
@@ -54,7 +55,7 @@ async def select_vocabulary(item: DayParam):
         }
 
         vocabularyList = session.query(VocabularyTable).filter(VocabularyTable.group == word.name,
-                                                                  VocabularyTable.day == word.day).all()
+                                                               VocabularyTable.day == word.day).all()
         for vocabulary in vocabularyList:
             vocabularyInfo = {
                 "meaning": vocabulary.meaning,
@@ -71,6 +72,12 @@ async def select_vocabulary(item: DayParam):
         result_data["result"].append(wordInfo)
 
     return result_data
+
+
+@router.post("/select/examination")
+async def select_examination(item: DayParam):
+    random_order = func.random()
+    return session.query(VocabularyTable.word).filter(VocabularyTable.day == item.day).order_by(random_order).all()
 
 
 @router.post("/group/insert")
