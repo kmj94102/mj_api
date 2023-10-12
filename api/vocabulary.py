@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from db import session
 from model import VocabularyTable, Vocabulary, create_vocabulary, \
-    WordGroupTable, WordGroup, create_word_group, DayParam
+    WordGroupTable, WordGroup, create_word_group, DayParam, \
+    ExaminationScoringItems, ExaminationScoring
 from typing import List
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -77,7 +78,34 @@ async def select_vocabulary(item: DayParam):
 @router.post("/select/examination")
 async def select_examination(item: DayParam):
     random_order = func.random()
-    return session.query(VocabularyTable.id, VocabularyTable.word).filter(VocabularyTable.day == item.day).order_by(random_order).all()
+    return session.query(VocabularyTable.id, VocabularyTable.word).filter(VocabularyTable.day == item.day) \
+        .order_by(random_order).all()
+
+
+@router.post("/select/examination/scoring")
+async def select_examination_scoring(items: List[ExaminationScoring]):
+    correctCount = 0
+    wrongItems = []
+
+    vocabulary_ids = [item.id for item in items]
+    vocabularies = session.query(VocabularyTable).filter(VocabularyTable.id.in_(vocabulary_ids)).all()
+
+    for item in items:
+        vocabulary = next((v for v in vocabularies if v.id == item.id), None)
+        if vocabulary:
+            myMeaning = item.meaning.replace(" ", "")
+            vocabularyMeaning = vocabulary.meaning.replace(" ", "")
+
+            if myMeaning in vocabularyMeaning:
+                correctCount += 1
+            else:
+                wrongItems.append(vocabulary)
+
+    return {
+        "totalSize": len(items),
+        "correctCount": correctCount,
+        "wrongItems": wrongItems
+    }
 
 
 @router.post("/group/insert")

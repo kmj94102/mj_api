@@ -543,6 +543,16 @@ class DayParam(BaseModel):
     day: int
 
 
+class ExaminationScoring(BaseModel):
+    id: int
+    word: str
+    meaning: str
+
+
+class ExaminationScoringItems(BaseModel):
+    list: List[ExaminationScoring]
+
+
 def main():
     # Table 없으면 생성
     Base.metadata.create_all(bind=ENGINE)
