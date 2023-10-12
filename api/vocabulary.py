@@ -96,7 +96,7 @@ async def select_examination_scoring(items: List[ExaminationScoring]):
             myMeaning = item.meaning.replace(" ", "")
             vocabularyMeaning = vocabulary.meaning.replace(" ", "")
 
-            if myMeaning in vocabularyMeaning:
+            if myMeaning != "" and myMeaning in vocabularyMeaning:
                 correctCount += 1
             else:
                 wrongItems.append(vocabulary)
