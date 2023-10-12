@@ -77,7 +77,7 @@ async def select_vocabulary(item: DayParam):
 @router.post("/select/examination")
 async def select_examination(item: DayParam):
     random_order = func.random()
-    return session.query(VocabularyTable.word).filter(VocabularyTable.day == item.day).order_by(random_order).all()
+    return session.query(VocabularyTable.id, VocabularyTable.word).filter(VocabularyTable.day == item.day).order_by(random_order).all()
 
 
 @router.post("/group/insert")
