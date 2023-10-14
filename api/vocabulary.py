@@ -2,7 +2,8 @@ from fastapi import APIRouter, HTTPException
 from db import session
 from model import VocabularyTable, Vocabulary, create_vocabulary, \
     WordGroupTable, WordGroup, create_word_group, DayParam, \
-    ExaminationScoringItems, ExaminationScoring
+    ExaminationScoringItems, ExaminationScoring, \
+    WrongAnswerTable, WrongAnswer, create_wrong_answer
 from typing import List
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -85,7 +86,6 @@ async def select_examination(item: DayParam):
 @router.post("/select/examination/scoring")
 async def select_examination_scoring(items: List[ExaminationScoring]):
     correctCount = 0
-    wrongItems = []
 
     vocabulary_ids = [item.id for item in items]
     vocabularies = session.query(VocabularyTable).filter(VocabularyTable.id.in_(vocabulary_ids)).all()
@@ -99,12 +99,11 @@ async def select_examination_scoring(items: List[ExaminationScoring]):
             if myMeaning != "" and myMeaning in vocabularyMeaning:
                 correctCount += 1
             else:
-                wrongItems.append(vocabulary)
+                await insert_wrong_answer(vocabulary)
 
     return {
         "totalSize": len(items),
         "correctCount": correctCount,
-        "wrongItems": wrongItems
     }
 
 
@@ -127,3 +126,23 @@ async def insert_word_group(item: WordGroup):
         return f"{item.name} 추가 완료"
     else:
         return f"{item.name}는 중복된 그룹입니다."
+
+
+@router.post("/select/wrongAnswer")
+async def select_wrong_answer(item: DayParam):
+    return session.query(WrongAnswerTable).filter(WrongAnswerTable.day == item.day).all()
+
+
+@router.post("/insert/wrongAnswer")
+async def insert_wrong_answer(item: Vocabulary):
+    data = session.query(WrongAnswerTable).filter(WrongAnswerTable.word == item.word).first()
+    wrongAnswer = create_wrong_answer(item)
+
+    if data is None:
+        session.add(wrongAnswer)
+        session.commit()
+        return f"{item.word} 추가 완료"
+    else:
+        data.count += 1
+        session.commit()
+        return f"{item.word}는 이미 등록된 단어로 카운트를 증가합니다."

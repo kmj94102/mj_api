@@ -553,6 +553,36 @@ class ExaminationScoringItems(BaseModel):
     list: List[ExaminationScoring]
 
 
+class WrongAnswerTable(Base):
+    __tablename__ = "wrong_answer"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    day = Column(Integer)
+    word = Column(String(150))
+    meaning = Column(Text)
+    hint = Column(Text)
+    count = Column(Integer)
+
+
+class WrongAnswer(BaseModel):
+    day: int
+    word: str
+    meaning: str
+    hint: str
+    count: int
+
+
+def create_wrong_answer(item: Vocabulary) -> WrongAnswerTable:
+    wrongAnswer = WrongAnswerTable()
+    wrongAnswer.day = item.day
+    wrongAnswer.word = item.word
+    wrongAnswer.meaning = item.meaning
+    wrongAnswer.hint = item.hint
+    wrongAnswer.count = 1
+
+    return wrongAnswer
+
+
 def main():
     # Table 없으면 생성
     Base.metadata.create_all(bind=ENGINE)
