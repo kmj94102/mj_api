@@ -32,6 +32,7 @@ app.include_router(elsword.router, prefix="/elsword", tags=["elsword"])
 app.include_router(accountBook.router, prefix="/accountBook", tags=["accountBook"])
 app.include_router(vocabulary.router, prefix="/vocabulary", tags=["vocabulary"])
 app.mount("/addVocabulary", StaticFiles(directory="web/vocabulary", html=True), name="static")
+app.mount("/dex", StaticFiles(directory="web/dex", html=True), name="static")
 
 
 @app.get("/")
