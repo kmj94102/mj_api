@@ -2,6 +2,7 @@ const pokemonList = document.getElementById('pokemon-list');
 
 let isLoading = false;
 let currentPage = 0;
+let generate = "";
 
 const fetchData = async () => {
     isLoading = true;
@@ -69,3 +70,41 @@ window.addEventListener('scroll', handleScroll);
 
 // Load initial data
 fetchData();
+
+function openDialog() {
+  var dialog = document.getElementById("dialog");
+  dialog.classList.add("show-dialog");
+}
+
+function closeDialog() {
+  var dialog = document.getElementById("dialog");
+  dialog.classList.remove("show-dialog");
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    const menu = document.getElementById("menu");
+    menu.addEventListener("click", openDialog);
+
+//    const buttons = document.querySelectorAll('generate');
+//
+//    buttons.forEach(button => {
+//      button.addEventListener('click', () => {
+//        buttons.forEach(d => d.classList.remove('selected'));
+//        button.classList.add('selected');
+//        closeDialog();
+//      });
+//    });
+// 1234567890
+// 12345
+
+
+    const divs = document.querySelectorAll('.generate');
+
+    divs.forEach(div => {
+      div.addEventListener('click', () => {
+        divs.forEach(d => d.classList.remove('selected'));
+        div.classList.add('selected');
+        closeDialog();
+      });
+    });
+});
