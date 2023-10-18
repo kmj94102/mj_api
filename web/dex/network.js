@@ -7,7 +7,7 @@ let generate = "";
 const fetchData = async () => {
     isLoading = true;
 
-    const response = await fetch(`https://port-0-mj-api-e9btb72blgnd5rgr.sel3.cloudtype.app/pokemon/select/list?skip=${currentPage * 100}&limit=100`);
+    const response = await fetch(`https://port-0-mj-api-e9btb72blgnd5rgr.sel3.cloudtype.app/pokemon/select/list?skip=${currentPage * 100}&limit=100&generation=${generate}`);
     const data = await response.json();
     console.log(currentPage);
 
@@ -85,25 +85,20 @@ document.addEventListener("DOMContentLoaded", function() {
     const menu = document.getElementById("menu");
     menu.addEventListener("click", openDialog);
 
-//    const buttons = document.querySelectorAll('generate');
-//
-//    buttons.forEach(button => {
-//      button.addEventListener('click', () => {
-//        buttons.forEach(d => d.classList.remove('selected'));
-//        button.classList.add('selected');
-//        closeDialog();
-//      });
-//    });
-// 1234567890
-// 12345
-
-
     const divs = document.querySelectorAll('.generate');
 
     divs.forEach(div => {
       div.addEventListener('click', () => {
         divs.forEach(d => d.classList.remove('selected'));
         div.classList.add('selected');
+        const select = div.dataset.info;
+        if(generate != select) {
+            generate = select;
+            currentPage = 0;
+            pokemonList.innerHTML = '';
+            fetchData();
+        }
+
         closeDialog();
       });
     });
