@@ -50,7 +50,7 @@ async def read_pokemon_with_number(number: str):
 
 
 @router.get("/select/list")
-async def read_pokemon_list(name: str = "", skip: int = 0, limit: int = 100):
+async def read_pokemon_list(name: str = "", skip: int = 0, limit: int = 100, generation: str = ""):
     """
     포켓몬 리스트 조회
     - **name**: 포켓몬 이름
@@ -58,11 +58,14 @@ async def read_pokemon_list(name: str = "", skip: int = 0, limit: int = 100):
     - **limit**: 한번 호출 시 불러올 개수
     """
     session.commit()
-
     pokemon_list = session.query(PokemonTable.index, PokemonTable.number, PokemonTable.name, PokemonTable.spotlight,
-                                 PokemonTable.shinySpotlight, PokemonTable.isCatch) \
-        .filter(PokemonTable.name.like(f"%{name}%")).offset(skip).limit(limit).all()
-    total_size = session.query(PokemonTable).filter(PokemonTable.name.like(f"%{name}%")).count()
+                                 PokemonTable.shinySpotlight, PokemonTable.isCatch, PokemonTable.image,
+                                 PokemonTable.shinyImage) \
+        .filter(PokemonTable.name.like(f"%{name}%"), PokemonTable.generation.like(f"%{generation}%")) \
+        .offset(skip).limit(limit).all()
+
+    total_size = session.query(PokemonTable)\
+        .filter(PokemonTable.name.like(f"%{name}%"), PokemonTable.generation.like(f"%{generation}%")).count()
     return {
         "list": pokemon_list,
         "totalSize": total_size
