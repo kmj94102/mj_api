@@ -143,8 +143,9 @@ async def select_this_year_summary(config: DateConfiguration):
     currentDate = config.date
 
     for month in range(1, 13):
-        start_date = calculate_start_date(datetime(currentDate.year, month, currentDate.day), config.baseDate)
-        end_date = calculate_end_date(datetime(currentDate.year, month, currentDate.day), config.baseDate)
+        new_date = datetime(currentDate.year, month, config.baseDate)
+        start_date = calculate_start_date(new_date, config.baseDate)
+        end_date = calculate_end_date(new_date, config.baseDate)
         info = session.query(
             func.sum(AccountBook.amount).label("amount")
         ).filter(
