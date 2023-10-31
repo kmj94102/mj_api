@@ -4,7 +4,7 @@ from model import AccountBook, AccountBookItem, create_account_book, DateConfigu
     FrequentlyAccountBook, FrequentlyAccountBookItem, create_frequently_account_book, \
     FixedAccountBook, FixedAccountBookItem, create_fixed_account_book
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 
 from sqlalchemy import update, delete
@@ -111,10 +111,8 @@ async def select_account_summary_this_month(config: DateConfiguration):
 async def select_last_month_analysis(config: DateConfiguration):
     session.commit()
 
-    date = config.date
-    lastMonth = datetime(date.year, date.month - 1, date.day)
+    lastMonth = calculate_last_month(config)
 
-    date_format = "%Y.%m.%d"
     start_date = calculate_start_date(lastMonth, config.baseDate)
     end_date = calculate_end_date(lastMonth, config.baseDate)
 
@@ -135,6 +133,23 @@ async def select_last_month_analysis(config: DateConfiguration):
         "end": end_date.strftime("%Y.%m.%d"),
         "result": result
     }
+
+
+def calculate_last_month(config: DateConfiguration):
+    date = config.date
+    baseDate = config.baseDate
+
+    if date.day > baseDate:
+        lastMonth = date.replace(day=baseDate + 1)
+    else:
+        lastMonth = date
+
+    if date.month > 1:
+        lastMonth = lastMonth.replace(month=date.month - 1)
+    else:
+        lastMonth = lastMonth.replace(year=date.year - 1, month=12)
+
+    return lastMonth
 
 
 @router.post("/select/thisYearSummary")

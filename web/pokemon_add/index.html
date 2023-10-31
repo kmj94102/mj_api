@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>포켓몬 등록</title>
+    <link rel="stylesheet" href="style.css"/>
+    <script src="network.js"></script>
+</head>
+<body>
+<div class="box">
+    <span class="borderLine"></span>
+    <div class="form">
+        <div class="row">
+            <div class="inputBox">
+                <input type="number" required="required" id="search_number">
+                <span>검색 번호</span>
+                <i></i>
+            </div>
+            <span class="spacer"></span>
+            <span class="spacer"></span>
+            <button id="search">검색</button>
+        </div>
+
+        <div class="inputBox">
+            <input type="text" required="required" id="description">
+            <span>설명</span>
+            <i></i>
+        </div>
+
+        <div class="row">
+            <div class="inputBox">
+                <input type="text" required="required" id="classification">
+                <span>분류</span>
+                <i></i>
+            </div>
+            <span class="spacer"></span>
+            <span class="spacer"></span>
+            <div class="inputBox">
+                <input type="text" required="required" id="characteristic">
+                <span>특성</span>
+                <i></i>
+            </div>
+        </div>
+
+        <div class="inputBox">
+            <input type="text" required="required" id="attribute">
+            <span>타입</span>
+            <i></i>
+        </div>
+
+        <div class="inputBox">
+            <input type="number" required="required" id="generation">
+            <span>세대</span>
+            <i></i>
+        </div>
+
+        <div class="inputBox">
+            <input type="text" required="required" id="status">
+            <span>스테이터스</span>
+            <i></i>
+        </div>
+
+        <div class="row">
+            <div class="inputBox">
+                <input type="text" required="required" id="number">
+                <span>번호</span>
+                <i></i>
+            </div>
+            <span class="spacer"></span>
+            <span class="spacer"></span>
+            <div class="inputBox">
+                <input type="text" required="required" id="name">
+                <span>이름</span>
+                <i></i>
+            </div>
+        </div>
+
+        <span id="engName" style="margin-top: 50px;color: white;">aa</span>
+
+        <button id="searchImage" style="margin-top: 20px;">이미지 조회</button>
+
+        <div class="inputBox">
+            <input type="text" required="required" id="image">
+            <span>이미지</span>
+            <i></i>
+        </div>
+
+        <div class="inputBox">
+            <input type="text" required="required" id="shinyImage">
+            <span>이로치 이미지</span>
+            <i></i>
+        </div>
+
+        <div class="inputBox">
+            <input type="text" required="required" id="spotlight">
+            <span>스포트라이트</span>
+            <i></i>
+        </div>
+
+        <div class="inputBox">
+            <input type="text" required="required" id="shinySpotlight">
+            <span>이로치 스포트라이트</span>
+            <i></i>
+        </div>
+
+        <div class="row" style="margin-top:70px;">
+            <img id="viewImage">
+            <img id="viewShinyImage">
+        </div>
+
+        <div class="row">
+            <img id="viewSpotlight">
+            <img id="viewShinySpotlight">
+        </div>
+
+        <button id="register">등록</button>
+
+    </div>
+</div>
+</body>
+</html>
