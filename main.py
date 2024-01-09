@@ -4,7 +4,7 @@ from starlette.middleware.cors import CORSMiddleware
 from model import HomeParam
 
 from pydantic import BaseSettings
-from api import pokemon, calendar, elsword, accountBook, vocabulary
+from api import pokemon, calendar, elsword, accountBook, vocabulary, user
 from api.calendar import read_calendar_week
 from api.elsword import read_elsword_quest_progress
 from fastapi.staticfiles import StaticFiles
@@ -31,6 +31,7 @@ app.include_router(calendar.router, prefix="/calendar", tags=["calendar"])
 app.include_router(elsword.router, prefix="/elsword", tags=["elsword"])
 app.include_router(accountBook.router, prefix="/accountBook", tags=["accountBook"])
 app.include_router(vocabulary.router, prefix="/vocabulary", tags=["vocabulary"])
+app.include_router(user.router, prefix="/user", tags=["user"])
 app.mount("/addVocabulary", StaticFiles(directory="web/vocabulary", html=True), name="static")
 app.mount("/dex", StaticFiles(directory="web/dex", html=True), name="static")
 
