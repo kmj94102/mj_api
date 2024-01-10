@@ -111,7 +111,7 @@ async def social_login(item: SocialLoginInfo):
     """
     data = check_duplicate_id(item.id)
     if data is None:
-        raise_http_exception("회원 가입 필요", 201)
+        raise_http_exception("회원 가입 필요", 501)
     elif data.type == 'email':
         raise_http_exception("이메일로 가입된 아이디입니다.")
     elif data.type != item.type:
