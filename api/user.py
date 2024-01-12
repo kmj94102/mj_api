@@ -51,6 +51,8 @@ async def join_email(item: User):
     :param item:
     :return:
     """
+    session.commit()
+
     if not check_email(item.id):
         raise_http_exception("이메일 형식에 맞지 않는 아이디입니다.")
 
@@ -88,6 +90,8 @@ async def email_login(item: LoginInfo):
     :param item:
     :return:
     """
+    session.commit()
+
     data = check_duplicate_id(item.id)
     if data is None:
         raise_http_exception("아이디 또는 비밀번호를 확인해 주세요.")
@@ -109,6 +113,8 @@ async def social_login(item: SocialLoginInfo):
     :param item:
     :return:
     """
+    session.commit()
+
     data = check_duplicate_id(item.id)
     if data is None:
         raise_http_exception("회원 가입 필요", 501)

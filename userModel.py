@@ -11,7 +11,7 @@ class UserTable(Base):
     __tablename__ = 'user'
     index = Column(Integer, primary_key=True, autoincrement=True)
     type = Column(String(45))
-    id = Column(String(45))
+    id = Column(String(200))
     password = Column(String(45))
     nickname = Column(String(45))
     gender = Column(String(45))
