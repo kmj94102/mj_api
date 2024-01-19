@@ -237,11 +237,13 @@ async def insert_task(item: TaskItem):
 
 @router.post("/update/task")
 async def update_task(item: TaskUpdateItem):
+    date_format = '%Y.%m.%d'
     task = session.query(Task).filter(Task.id == item.id).first()
     task.isCompleted = item.isCompleted
     session.commit()
 
-    return "업데이트 완료"
+    formatted_date = datetime.strptime(item.date, date_format)
+    return await read_calendar(formatted_date)
 
 
 @router.post("/insert/planTasks")

@@ -214,6 +214,7 @@ def create_task(item: TaskItem) -> Task:
 class TaskUpdateItem(BaseModel):
     id: int
     isCompleted: bool
+    date: str
 
 
 class PlanTasks(BaseModel):
