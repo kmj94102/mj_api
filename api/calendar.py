@@ -235,7 +235,7 @@ async def insert_task(item: TaskItem):
     return f"{item.contents} 추가 완료"
 
 
-@router.post("/task/update")
+@router.post("/update/task")
 async def update_task(item: TaskUpdateItem):
     task = session.query(Task).filter(Task.id == item.id).first()
     task.isCompleted = item.isCompleted
