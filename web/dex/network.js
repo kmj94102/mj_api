@@ -3,6 +3,8 @@ const pokemonList = document.getElementById('pokemon-list');
 let isLoading = false;
 let currentPage = 0;
 let generate = "";
+let selectIndex = '';
+let selectNumber = '';
 
 const fetchData = async () => {
     isLoading = true;
@@ -10,16 +12,18 @@ const fetchData = async () => {
     const response = await fetch(`https://port-0-mj-api-e9btb72blgnd5rgr.sel3.cloudtype.app/pokemon/select/list?skip=${currentPage * 100}&limit=100&generation=${generate}`);
     const data = await response.json();
     console.log(currentPage);
+    const pokemonName = document.getElementById('pokemonName');
+    const infoDialog = document.getElementById('infoDialog');
 
-    data.list.forEach(pokemon => {
+    data.list.forEach((pokemon, index) => {
         const item = document.createElement('div');
         item.className = 'pokemon-item';
         item.setAttribute('data-text', pokemon.isCatch);
-        if(pokemon.isCatch) {
+        if (pokemon.isCatch) {
             item.style.backgroundColor = "#fafafa"
-            item.style.color = "#17181"
+            item.style.color = "#17181D"
         } else {
-            item.style.backgroundColor = "#17181"
+            item.style.backgroundColor = "#17181D"
             item.style.color = "#fafafa"
         }
 
@@ -39,17 +43,14 @@ const fetchData = async () => {
         name.className = 'name'
         name.innerHTML = pokemon.number + '<br>' + pokemon.name;
 
-//        const button = document.createElement('div');
-//        button.innerText = "업데이트"
-//        button.addEventListener("click", function() {
-//          // 클릭 시 실행될 코드를 작성합니다.
-//          alert(`${pokemon.name}가 클릭되었습니다!  ${pokemon.number}`);
-//        });
-
-
         item.appendChild(imageDiv);
         item.appendChild(name);
-//        item.appendChild(button);
+        item.addEventListener("click", function () {
+            infoDialog.style.display = 'block';
+            pokemonName.innerText = pokemon.name;
+            selectNumber = pokemon.number;
+            selectIndex = index;
+        });
 
         pokemonList.appendChild(item);
     });
@@ -72,34 +73,74 @@ window.addEventListener('scroll', handleScroll);
 fetchData();
 
 function openDialog() {
-  var dialog = document.getElementById("dialog");
-  dialog.classList.add("show-dialog");
+    var dialog = document.getElementById("dialog");
+    dialog.classList.add("show-dialog");
 }
 
 function closeDialog() {
-  var dialog = document.getElementById("dialog");
-  dialog.classList.remove("show-dialog");
+    var dialog = document.getElementById("dialog");
+    dialog.classList.remove("show-dialog");
 }
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     const menu = document.getElementById("menu");
     menu.addEventListener("click", openDialog);
 
     const divs = document.querySelectorAll('.generate');
 
     divs.forEach(div => {
-      div.addEventListener('click', () => {
-        divs.forEach(d => d.classList.remove('selected'));
-        div.classList.add('selected');
-        const select = div.dataset.info;
-        if(generate != select) {
-            generate = select;
-            currentPage = 0;
-            pokemonList.innerHTML = '';
-            fetchData();
-        }
+        div.addEventListener('click', () => {
+            divs.forEach(d => d.classList.remove('selected'));
+            div.classList.add('selected');
+            const select = div.dataset.info;
+            if (generate != select) {
+                generate = select;
+                currentPage = 0;
+                pokemonList.innerHTML = '';
+                fetchData();
+            }
 
-        closeDialog();
-      });
+            closeDialog();
+        });
     });
 });
+
+function sendData(choice) {
+    const infoDialog = document.getElementById('infoDialog');
+    infoDialog.style.display = 'none';
+    updateCatchStatus(choice);
+}
+
+function updateCatchStatus(isCaught) {
+    const dataToSend = {
+        number: selectNumber,
+        isCatch: isCaught
+    };
+
+    fetch('https://port-0-mj-api-e9btb72blgnd5rgr.sel3.cloudtype.app/pokemon/update/catch', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(dataToSend)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Server response:', data);
+        const items = document.getElementsByClassName('pokemon-item');
+        if (isCaught) {
+            items[selectIndex].style.backgroundColor = "#fafafa"
+            items[selectIndex].style.color = "#17181D"
+        } else {
+            items[selectIndex].style.backgroundColor = "#17181D"
+            items[selectIndex].style.color = "#fafafa"
+        }
+
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert(`${error}`)
+    });
+
+    infoDialog.style.display = 'none';
+}

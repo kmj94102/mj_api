@@ -70,6 +70,31 @@ img {
     visibility: visible;
 }
 
+.infoDialog {
+    display: none;
+    position: fixed;
+    min-width: 50vh;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fafafa;
+    border: 2px solid #17181D;
+    padding: 30px;
+    border-radius: 20px;
+}
+.infoDialog span {
+  display: block;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 600;
+}
+.infoDialog button {
+    width: 45%;
+    height: 35px;
+    background: #82E3D2;
+    border-radius: 10px;
+}
+
 table {
   border-collapse: collapse;
 }
