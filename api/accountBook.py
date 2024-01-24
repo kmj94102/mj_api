@@ -138,23 +138,35 @@ async def select_last_month_analysis(config: DateConfiguration):
 
 
 def add_percentages(result):
-    positive_amounts = [entry.amount for entry in result if entry.amount >= 0]
-    negative_amounts = [entry.amount for entry in result if entry.amount < 0]
+    # 음수와 양수를 분리
+    positive_entries = [entry for entry in result if entry["amount"] >= 0]
+    negative_entries = [entry for entry in result if entry["amount"] < 0]
 
-    total_positive = sum(positive_amounts) if positive_amounts else 0
-    total_negative = sum(negative_amounts) if negative_amounts else 0
+    # 각각의 총합 계산
+    total_positive = sum(entry["amount"] for entry in positive_entries) if positive_entries else 0
+    total_negative = sum(entry["amount"] for entry in negative_entries) if negative_entries else 0
 
+    # 결과에 퍼센트 추가
     result_with_percentages = []
-    for entry in result:
+    for entry in sorted(positive_entries, key=lambda x: x["amount"], reverse=True):
         percentage = 0
-        if entry.amount >= 0 and total_positive != 0:
-            percentage = round((entry.amount / total_positive) * 100, 2)
-        elif entry.amount < 0 and total_negative != 0:
-            percentage = round((entry.amount / total_negative) * 100, 2)
+        if entry["amount"] >= 0 and total_positive != 0:
+            percentage = round((entry["amount"] / total_positive) * 100, 2)
 
         result_with_percentages.append({
-            "usageType": entry.usageType,
-            "amount": entry.amount,
+            "usageType": entry["usageType"],
+            "amount": entry["amount"],
+            "percentage": percentage
+        })
+
+    for entry in sorted(negative_entries, key=lambda x: x["amount"]):
+        percentage = 0
+        if entry["amount"] < 0 and total_negative != 0:
+            percentage = round((entry["amount"] / total_negative) * 100, 2)
+
+        result_with_percentages.append({
+            "usageType": entry["usageType"],
+            "amount": entry["amount"],
             "percentage": percentage
         })
 
