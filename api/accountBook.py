@@ -128,11 +128,37 @@ async def select_last_month_analysis(config: DateConfiguration):
         func.sum(AccountBook.amount).desc()
     ).all()
 
+    result_with_percentages = add_percentages(result)
+
     return {
         "start": start_date.strftime("%Y.%m.%d"),
         "end": end_date.strftime("%Y.%m.%d"),
-        "result": result
+        "result": result_with_percentages
     }
+
+
+def add_percentages(result):
+    positive_amounts = [entry.amount for entry in result if entry.amount >= 0]
+    negative_amounts = [entry.amount for entry in result if entry.amount < 0]
+
+    total_positive = sum(positive_amounts) if positive_amounts else 0
+    total_negative = sum(negative_amounts) if negative_amounts else 0
+
+    result_with_percentages = []
+    for entry in result:
+        percentage = 0
+        if entry.amount >= 0 and total_positive != 0:
+            percentage = round((entry.amount / total_positive) * 100, 2)
+        elif entry.amount < 0 and total_negative != 0:
+            percentage = round((entry.amount / total_negative) * 100, 2)
+
+        result_with_percentages.append({
+            "usageType": entry.usageType,
+            "amount": entry.amount,
+            "percentage": percentage
+        })
+
+    return result_with_percentages
 
 
 def calculate_last_month(config: DateConfiguration):
