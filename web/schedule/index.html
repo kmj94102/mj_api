@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="style.css"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    </head>
+    <body>
+        <div id="dimLayer"></div>
+        <div id="dialog" style="display: none;">
+            <h2 id="dialogTitle"></h2>
+            <p id="dialogContent"></p>
+            <button onclick="closeDialog()">Close</button>
+        </div>
+        <div id="dialogContainer">
+            <label for="year">Year:</label>
+            <input type="number" id="year" min="2020" max="2050" />
+            <label for="month">Month:</label>
+            <input type="number" id="month" min="1" max="12" />
+            <button onclick="applyDate()">Apply</button>
+            <button onclick="closeDialog()">Cancel</button>
+          </div>
+        <div id="date"></div>
+        <div class="calendar" id="calendar"></div>
+        <script src="network.js"></script>
+    </body>
+</html>

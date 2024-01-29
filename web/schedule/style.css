@@ -1,0 +1,63 @@
+#date {
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
+    padding: 20px;
+}
+#dialogContainer {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+.calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.day {
+    border: 1px solid #ccc;
+    padding: 5px;
+    text-align: center;
+}
+
+.event {
+    background-color: #C0C0F6;
+    margin: 2px;
+    padding: 2px;
+    border-radius: 4px;
+}
+
+.plan {
+    background-color: #82E3D2;
+    margin: 2px;
+    padding: 2px;
+    border-radius: 4px;
+}
+#dimLayer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* 어두운 검은색 배경, 투명도 조절 가능 */
+    display: none; /* 초기에는 안 보이도록 설정 */
+  }
+#dialog {
+    position: absolute;
+    padding: 20px;
+    margin: 0;
+    background: white;
+    border: black 1px solid;
+    width: 500px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
