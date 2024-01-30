@@ -4,6 +4,11 @@
     font-weight: bold;
     padding: 20px;
 }
+button {
+    padding: 5px 10px;
+    background: #82E3D2;
+    border-radius: 5px;
+}
 #dialogContainer {
     display: none;
     position: fixed;
@@ -14,7 +19,7 @@
     padding: 20px;
     border: 1px solid #ccc;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
+}
   
 .calendar {
     display: grid;
@@ -49,7 +54,7 @@
     height: 100%;
     background-color: rgba(0, 0, 0, 0.7); /* 어두운 검은색 배경, 투명도 조절 가능 */
     display: none; /* 초기에는 안 보이도록 설정 */
-  }
+}
 #dialog {
     position: absolute;
     padding: 20px;
@@ -60,4 +65,33 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+
+.addItems {
+    padding: 20px 0 0 0;
+}
+.addItems button:nth-child(2) {
+    background: #C0C0F6;
+}
+#addSchedule {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+#addPlan {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }

@@ -9,18 +9,49 @@
         <div id="dialog" style="display: none;">
             <h2 id="dialogTitle"></h2>
             <p id="dialogContent"></p>
-            <button onclick="closeDialog()">Close</button>
+            <button onclick="closeDialog()">닫기</button>
         </div>
         <div id="dialogContainer">
-            <label for="year">Year:</label>
-            <input type="number" id="year" min="2020" max="2050" />
-            <label for="month">Month:</label>
-            <input type="number" id="month" min="1" max="12" />
-            <button onclick="applyDate()">Apply</button>
-            <button onclick="closeDialog()">Cancel</button>
-          </div>
+            <input type="month" id="yearMonth"/><br><br>
+            <button onclick="applyDate()">확인</button>
+            <button style="background: #C0C0F6;" onclick="closeDateDialog()">닫기</button>
+        </div>
+        <div id="addSchedule">
+            <label>날짜</label>
+            <input type="date" id="scheduleDate"><br><br>
+            <label>시작일</label>
+            <input type="time" id="startTime">
+            <label>종료일</label>
+            <input type="time" id="endTime"><br><br>
+            <label>일정 제목</label>
+            <input type="text" id="scheduleTitle"><br><br>
+            <label>일정 내용</label>
+            <textarea rows="4" cols="50" id="scheduleContents"></textarea><br><br>
+            <button onclick="insertSchedule()">등록</button>
+            <button style="background: #C0C0F6;" onclick="closeAddSchedueDialog()">닫기</button>
+        </div>
+        <div id="addPlan">
+            <label>날짜</label>
+            <input type="date" id="planDate"><br><br>
+            <label>계획 제목</label>
+            <input type="text" id="planTitle"><br><br>
+            <label>계획 내용</label>
+            <div id="textareaContainer">
+                <div>
+                    <textarea rows="4" cols="50" class="taskTextarea"></textarea>
+                    <button onclick="removeTextarea(this)">X</button>
+                </div>
+            </div>
+            <button onclick="addTextarea()">+</button>
+            <button onclick="insertPlanTasks()">등록</button>
+            <button style="background: #C0C0F6;" onclick="closeAddPlanDialog()">닫기</button>
+        </div>
         <div id="date"></div>
         <div class="calendar" id="calendar"></div>
+        <div class="addItems">
+            <button onclick="openAddScheduleDialog()">일정 추가</button>
+            <button onclick="openAddPlanDialog()">계획 추가</button>
+        </div>
         <script src="network.js"></script>
     </body>
 </html>
