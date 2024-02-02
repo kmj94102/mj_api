@@ -1,14 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from db import session
-from model import VocabularyTable, Vocabulary, create_vocabulary, \
+from model.model import VocabularyTable, Vocabulary, create_vocabulary, \
     WordGroupTable, WordGroup, create_word_group, DayParam, \
-    ExaminationScoringItems, ExaminationScoring, \
-    WrongAnswerTable, WrongAnswer, create_wrong_answer
+    ExaminationScoring, \
+    WrongAnswerTable, create_wrong_answer
 from typing import List
 
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import aliased
-from sqlalchemy import update, delete, text
 from sqlalchemy.sql import func
 
 router = APIRouter()

@@ -1,13 +1,11 @@
 from fastapi import APIRouter, HTTPException
 from db import session
-from model import AccountBook, AccountBookItem, create_account_book, DateConfiguration, AccountBookInsertItem, \
+from model.model import AccountBook, create_account_book, DateConfiguration, AccountBookInsertItem, \
     FrequentlyAccountBook, FrequentlyAccountBookItem, create_frequently_account_book, \
     FixedAccountBook, FixedAccountBookItem, create_fixed_account_book
 
-from datetime import datetime, timedelta
-from typing import List
+from datetime import datetime
 
-from sqlalchemy import update, delete
 from sqlalchemy import func
 
 router = APIRouter()

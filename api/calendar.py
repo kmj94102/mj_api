@@ -1,14 +1,12 @@
 from fastapi import APIRouter, HTTPException
 from db import session
-from model import Calendar, CalendarItem, create_calendar, \
+from model.model import Calendar, CalendarItem, create_calendar, \
     Schedule, ScheduleItem, create_schedule, \
-    Plan, PlanItem, create_plan, PlanTasks, \
+    Plan, PlanTasks, \
     Task, TaskItem, create_task, TaskUpdateItem
 
 from datetime import datetime, timedelta
 from typing import List
-
-from sqlalchemy import update, delete
 
 router = APIRouter()
 

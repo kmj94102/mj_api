@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 
 from starlette.middleware.cors import CORSMiddleware
-from model import HomeParam
+from model.model import HomeParam
 
 from pydantic import BaseSettings
-from api import pokemon, calendar, elsword, accountBook, vocabulary, user
+from api import pokemon, calendar, elsword, accountBook, vocabulary, user, web
 from api.calendar import read_calendar_week
 from api.elsword import read_elsword_quest_progress
 from fastapi.staticfiles import StaticFiles
@@ -32,13 +32,12 @@ app.include_router(elsword.router, prefix="/elsword", tags=["elsword"])
 app.include_router(accountBook.router, prefix="/accountBook", tags=["accountBook"])
 app.include_router(vocabulary.router, prefix="/vocabulary", tags=["vocabulary"])
 app.include_router(user.router, prefix="/user", tags=["user"])
+app.include_router(web.router, prefix="/web", tags=["web"])
 app.mount("/addVocabulary", StaticFiles(directory="web/vocabulary", html=True), name="static")
 app.mount("/dex", StaticFiles(directory="web/dex", html=True), name="static")
 
 
-@app.get("/")
-async def root():
-    return {"message": settings.pwd}
+app.mount("/", StaticFiles(directory="web/main", html=True), name="static")
 
 
 @app.post("/homeInfo/select")

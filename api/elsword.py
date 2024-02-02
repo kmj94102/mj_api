@@ -1,12 +1,10 @@
 from fastapi import APIRouter
 from db import session
-from model import Elsword, ElswordItem, create_elsword, \
+from model.model import Elsword, ElswordItem, create_elsword, \
     Quest, QuestItem, create_quest, QuestUpdateItem, \
-    QuestProgress, QuestProgressItem, create_init_quest_progress, QuestProgressUpdateItem
+    QuestProgress, create_init_quest_progress, QuestProgressUpdateItem
 
-from typing import List
-
-from sqlalchemy import update, delete, text
+from sqlalchemy import delete, text
 from sqlalchemy.orm import load_only
 
 router = APIRouter()

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from db import session
-from model import PokemonTable, Pokemon, create_pokemon_table, \
+from model.model import PokemonTable, Pokemon, create_pokemon_table, \
     CharacteristicTable, Characteristic, create_characteristic_table, \
     UpdateIsCatch, UpdatePokemonImage, \
     EvolutionTable, Evolution, create_evolution_table, \
@@ -9,7 +9,7 @@ from typing import List
 
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import aliased
-from sqlalchemy import update, delete, text
+from sqlalchemy import text
 
 router = APIRouter()
 

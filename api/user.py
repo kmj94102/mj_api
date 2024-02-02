@@ -1,9 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from db import session
-from userModel import *
+from model.userModel import *
 import re
-
-from sqlalchemy import update, delete
 
 router = APIRouter()
 
