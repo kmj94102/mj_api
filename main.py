@@ -35,6 +35,7 @@ app.include_router(user.router, prefix="/user", tags=["user"])
 app.include_router(web.router, prefix="/web", tags=["web"])
 app.mount("/", StaticFiles(directory="web/main", html=True), name="static")
 app.mount("/main", StaticFiles(directory="web", html=True), name="static")
+app.mount("/dex", StaticFiles(directory="web/dex", html=True), name="static")
 
 
 @app.post("/homeInfo/select")
