@@ -33,11 +33,8 @@ app.include_router(accountBook.router, prefix="/accountBook", tags=["accountBook
 app.include_router(vocabulary.router, prefix="/vocabulary", tags=["vocabulary"])
 app.include_router(user.router, prefix="/user", tags=["user"])
 app.include_router(web.router, prefix="/web", tags=["web"])
-app.mount("/addVocabulary", StaticFiles(directory="web/vocabulary", html=True), name="static")
-app.mount("/dex", StaticFiles(directory="web/dex", html=True), name="static")
-
-
 app.mount("/", StaticFiles(directory="web/main", html=True), name="static")
+app.mount("/main", StaticFiles(directory="web", html=True), name="static")
 
 
 @app.post("/homeInfo/select")
