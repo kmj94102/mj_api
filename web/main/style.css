@@ -1,0 +1,25 @@
+*{
+    padding: 0;
+}
+body {
+    background: #17181D;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+.card {
+    border: 1px #3E3F44 solid;
+    border-radius: 5px;
+    color: white;
+    padding: 20px 30px;
+    margin: 10px;
+    animation-delay: -3s;
+    cursor: pointer;
+    transition: 0.3s ease;
+    text-align: center;
+}
+.card:hover{
+    background: #03DAC5;
+    cursor: pointer;
+}
