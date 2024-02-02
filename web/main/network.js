@@ -1,5 +1,5 @@
 const fetchData = async () => {
-    fetch('https://port-0-mj-api-e9btb72blgnd5rgr.sel3.cloudtype.app/web/select', {
+    fetch('https://port-0-mj-api-e9btb72blgnd5rgr.sel3.cloudtype.app/webApi/select', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
