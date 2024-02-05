@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException
+from sqlalchemy.exc import SQLAlchemyError
 from db import session
 from model.userModel import *
+from model.couponModel import *
 import re
 
 router = APIRouter()
@@ -75,9 +77,27 @@ async def join_email(item: User):
     elif check_duplicate_nickname(item.nickname):
         raise_http_exception("중복된 닉네임입니다.")
 
-    user = create_user_table(item)
-    session.add(user)
-    session.commit()
+    try:
+        session.rollback()
+        session.begin()
+
+        user = create_user_table(item)
+        session.add(user)
+        session.flush()
+
+        coupon = create_new_user_coupon(user)
+        session.add(coupon)
+
+        lolketing_user = create_lolketing_user_table(user)
+        session.add(lolketing_user)
+
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise_http_exception(f"오류가 발생하였습니다. {e}")
+    finally:
+        session.close()
+
     return "회원가입 완료"
 
 
