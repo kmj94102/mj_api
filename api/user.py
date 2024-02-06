@@ -149,10 +149,10 @@ async def social_login(item: SocialLoginInfo):
 
 
 @router.post("/select/myInfo")
-async def select_my_info(user_id: str):
+async def select_my_info(item: IdParam):
     """
         내 정보 조회
-        :param user_id:
+        :param item:
         :return:
     """
     session.commit()
@@ -171,7 +171,7 @@ async def select_my_info(user_id: str):
     ).join(
         CouponTable, UserTable.index == CouponTable.user_id
     ).filter(
-        UserTable.id == user_id,
+        UserTable.id == item.id,
     ).group_by(
         UserTable.nickname,
         UserTable.id,

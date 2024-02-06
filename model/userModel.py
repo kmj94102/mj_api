@@ -87,3 +87,7 @@ def create_lolketing_user_table(item: UserTable) -> LolketingUserTable:
     user.user_id = item.index
 
     return user
+
+
+class IdParam(BaseModel):
+    id: str = None
