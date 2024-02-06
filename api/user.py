@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import func
+from sqlalchemy import func, delete
 from db import session
 from model.userModel import *
 from model.couponModel import *
@@ -146,6 +146,25 @@ async def social_login(item: SocialLoginInfo):
             'id': data.id,
             'nickname': data.nickname
         }
+
+
+@router.post("/withdrawal")
+async def withdrawal(item: IdParam):
+    """
+        회원 탈퇴
+        :param item:
+        :return:
+    """
+    session.commit()
+    data = session.query(UserTable).filter(UserTable.id == item.id).first()
+    if data is None:
+        raise_http_exception("회원 정보가 없습니다.")
+
+    session.execute(delete(UserTable).where(UserTable.id == item.id))
+    session.commit()
+    return {
+        'type': data.type
+    }
 
 
 @router.post("/select/myInfo")
