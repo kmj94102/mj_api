@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import func
 from db import session
 from model.userModel import *
 from model.couponModel import *
@@ -145,3 +146,40 @@ async def social_login(item: SocialLoginInfo):
             'id': data.id,
             'nickname': data.nickname
         }
+
+
+@router.post("/select/myInfo")
+async def select_my_info(user_id: str):
+    """
+        내 정보 조회
+        :param user_id:
+        :return:
+    """
+    session.commit()
+    user_info_query = session.query(
+        UserTable.nickname,
+        UserTable.id,
+        UserTable.mobile,
+        UserTable.address,
+        LolketingUserTable.grade,
+        LolketingUserTable.point,
+        LolketingUserTable.cash,
+        func.count(CouponTable.id).label("total_coupons"),
+        func.sum(func.cast(~CouponTable.isUsed, Integer)).label("unused_coupons")
+    ).join(
+        LolketingUserTable, UserTable.index == LolketingUserTable.user_id
+    ).join(
+        CouponTable, UserTable.index == CouponTable.user_id
+    ).filter(
+        UserTable.id == user_id,
+    ).group_by(
+        UserTable.nickname,
+        UserTable.id,
+        UserTable.mobile,
+        UserTable.address,
+        LolketingUserTable.grade,
+        LolketingUserTable.point,
+        LolketingUserTable.cash
+    ).first()
+
+    return user_info_query
