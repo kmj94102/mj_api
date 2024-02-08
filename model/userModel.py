@@ -23,6 +23,7 @@ class UserTable(Base):
 
 
 class User(BaseModel):
+    index: int = None
     type: str = None
     id: str = None
     password: str = None
@@ -91,3 +92,20 @@ def create_lolketing_user_table(item: UserTable) -> LolketingUserTable:
 
 class IdParam(BaseModel):
     id: str = None
+
+
+class CashChargingItem(BaseModel):
+    id: str = None
+    cash: int = None
+
+
+class CouponUseItem(BaseModel):
+    id: str = None
+    couponId: int = None
+
+
+class UpdateMyInfoItem(BaseModel):
+    id: str = None
+    nickname: str = None
+    mobile: str = None
+    address: str = None

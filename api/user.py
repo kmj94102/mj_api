@@ -180,11 +180,13 @@ async def select_my_info(item: IdParam):
         UserTable.id,
         UserTable.mobile,
         UserTable.address,
+        LolketingUserTable.id.label("lolketingId"),
         LolketingUserTable.grade,
         LolketingUserTable.point,
         LolketingUserTable.cash,
-        func.count(CouponTable.id).label("total_coupons"),
-        func.sum(func.cast(~CouponTable.isUsed, Integer)).label("unused_coupons")
+        CouponTable.id.label("couponId"),
+        func.count(CouponTable.id).label("totalCoupons"),
+        func.sum(func.cast(~CouponTable.isUsed, Integer)).label("availableCoupons")
     ).join(
         LolketingUserTable, UserTable.index == LolketingUserTable.user_id
     ).join(
@@ -202,3 +204,130 @@ async def select_my_info(item: IdParam):
     ).first()
 
     return user_info_query
+
+
+@router.post("/select/cash")
+async def select_cash(item: IdParam):
+    session.commit()
+
+    user = session.query(UserTable).filter(UserTable.id == item.id).first()
+    if not user:
+        raise_http_exception("유저 정보가 없습니다.")
+    cash = session.query(LolketingUserTable.cash).filter(LolketingUserTable.user_id == user.index).first()
+    if not cash:
+        raise_http_exception("유저 정보가 없습니다.")
+    return cash
+
+
+@router.post("/update/charging")
+async def cash_charging(item: CashChargingItem):
+    session.commit()
+
+    user = session.query(UserTable).filter(UserTable.id == item.id).first()
+    if not user:
+        raise_http_exception("유저 정보가 없습니다.")
+
+    lolketingUser = session.query(LolketingUserTable).filter(LolketingUserTable.user_id == user.index).first()
+    if not lolketingUser:
+        raise_http_exception("유저 정보가 없습니다.")
+
+    chargedCash, remainder = calculate_charging(lolketingUser.cash, item.cash)
+    lolketingUser.cash = chargedCash
+
+    totalPoint = lolketingUser.point + (remainder / 10)
+    if totalPoint <= 999_999:
+        lolketingUser.point = totalPoint
+    else:
+        lolketingUser.point = 999_999
+
+    if lolketingUser.grade != 'USER005':
+        lolketingUser.grade = getUserGrade(totalPoint)
+
+    return await select_my_info(IdParam(id=item.id))
+
+
+def calculate_charging(cash, chargingCash):
+    totalCash = cash + chargingCash
+    if totalCash <= 100_000_000:
+        chargedCash = totalCash
+        remainder = chargingCash
+    else:
+        chargedCash = 100_000_000
+        remainder = totalCash - 100_000_000
+
+    return chargedCash, remainder
+
+
+def getUserGrade(point):
+    if point < 3_000:
+        return 'USER001'
+    elif point < 30_000:
+        return 'USER002'
+    elif point < 300_000:
+        return 'USER003'
+    else:
+        return 'USER004'
+
+
+@router.post("/select/couponList")
+async def select_coupon_list(item: IdParam):
+    session.commit()
+
+    user = session.query(UserTable).filter(UserTable.id == item.id).first()
+    if not user:
+        raise_http_exception("유저 정보가 없습니다.")
+
+    couponList = session.query(CouponTable).filter(CouponTable.user_id == user.index).all()
+    return couponList
+
+
+@router.post("/update/usingCoupon")
+async def using_coupon(item: CouponUseItem):
+    session.commit()
+
+    coupon = session.query(CouponTable).filter(CouponTable.id == item.couponId).first()
+    if not coupon:
+        raise_http_exception("쿠폰 정보가 없습니다.")
+    if coupon.isUsed:
+        raise_http_exception("이미 사용한 쿠폰입니다.")
+
+    coupon.isUsed = True
+    await update_point(coupon.rp, item.id)
+
+    return await select_my_info(IdParam(id=item.id))
+
+
+async def update_point(point, id_):
+    user = session.query(UserTable).filter(UserTable.id == id_).first()
+    if not user:
+        raise_http_exception("유저 정보가 없습니다.")
+
+    lolketingUser = session.query(LolketingUserTable).filter(LolketingUserTable.user_id == user.index).first()
+    if not lolketingUser:
+        raise_http_exception("유저 정보가 없습니다.")
+
+    totalPoint = lolketingUser.point + point
+    if totalPoint <= 999_999:
+        lolketingUser.point = totalPoint
+    else:
+        lolketingUser.point = 999_999
+
+    lolketingUser.grade = getUserGrade(totalPoint)
+    session.commit()
+
+
+@router.post("/update/myInfo")
+async def update_my_info(item: UpdateMyInfoItem):
+    user = session.query(UserTable).filter(UserTable.id == item.id).first()
+    if not user:
+        raise_http_exception("유저 정보가 없습니다.")
+
+    if user.nickname != item.nickname and check_duplicate_nickname(item.nickname):
+        raise_http_exception("중복된 닉네임입니다.")
+
+    user.nickname = item.nickname
+    user.mobile = item.mobile
+    user.address = item.address
+
+    session.commit()
+    return "업데이트 완료"
