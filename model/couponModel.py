@@ -31,14 +31,36 @@ class Coupon(BaseModel):
     user_id: int = None
 
 
-def create_new_user_coupon(item: UserTable) -> CouponTable:
+class RouletteCountUpdateItem(BaseModel):
+    id: int = None
+    count: int = None
+
+
+class RouletteCoupon(BaseModel):
+    id: int = None
+    rp: int = None
+
+
+def create_new_user_coupon(userId) -> CouponTable:
     coupon = CouponTable()
     coupon.name = "COUPON001"
     coupon.rp = 500
     coupon.number = create_coupon_number()
     coupon.isUsed = False
     coupon.timestamp = datetime.now()
-    coupon.user_id = item.index
+    coupon.user_id = userId
+
+    return coupon
+
+
+def create_roulette_coupon(item: RouletteCoupon) -> CouponTable:
+    coupon = CouponTable()
+    coupon.name = "COUPON002"
+    coupon.rp = item.rp
+    coupon.number = create_coupon_number()
+    coupon.isUsed = False
+    coupon.timestamp = datetime.now()
+    coupon.user_id = item.id
 
     return coupon
 

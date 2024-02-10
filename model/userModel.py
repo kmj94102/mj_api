@@ -67,6 +67,7 @@ class LolketingUserTable(Base):
     cash = Column(Integer)
     point = Column(Integer)
     grade = Column(String(50))
+    roulette = Column(Integer)
     user_id = Column(Integer, ForeignKey('user.index'))
 
     user = relationship("UserTable", foreign_keys=[user_id])
@@ -92,6 +93,10 @@ def create_lolketing_user_table(item: UserTable) -> LolketingUserTable:
 
 class IdParam(BaseModel):
     id: str = None
+
+
+class UserIdParam(BaseModel):
+    id: int = None
 
 
 class CashChargingItem(BaseModel):

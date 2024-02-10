@@ -9,7 +9,7 @@ import re
 router = APIRouter()
 
 
-def raise_http_exception(detail: str = "Eror", status_code: int = 400):
+def raise_http_exception(detail: str = "Error", status_code: int = 400):
     raise HTTPException(status_code=status_code, detail=detail)
 
 
@@ -85,9 +85,6 @@ async def join_email(item: User):
         user = create_user_table(item)
         session.add(user)
         session.flush()
-
-        coupon = create_new_user_coupon(user)
-        session.add(coupon)
 
         lolketing_user = create_lolketing_user_table(user)
         session.add(lolketing_user)
@@ -176,6 +173,7 @@ async def select_my_info(item: IdParam):
     """
     session.commit()
     user_info_query = session.query(
+        UserTable.index,
         UserTable.nickname,
         UserTable.id,
         UserTable.mobile,
@@ -184,7 +182,6 @@ async def select_my_info(item: IdParam):
         LolketingUserTable.grade,
         LolketingUserTable.point,
         LolketingUserTable.cash,
-        CouponTable.id.label("couponId"),
         func.count(CouponTable.id).label("totalCoupons"),
         func.sum(func.cast(~CouponTable.isUsed, Integer)).label("availableCoupons")
     ).join(
@@ -203,7 +200,13 @@ async def select_my_info(item: IdParam):
         LolketingUserTable.cash
     ).first()
 
-    return user_info_query
+    # user_info_query를 딕셔너리로 변환
+    user_info_dict = dict(user_info_query)
+
+    couponList = session.query(CouponTable).filter(CouponTable.user_id == user_info_dict['index']).all()
+    user_info_dict['list'] = couponList
+
+    return user_info_dict
 
 
 @router.post("/select/cash")
@@ -269,16 +272,58 @@ def getUserGrade(point):
         return 'USER004'
 
 
-@router.post("/select/couponList")
-async def select_coupon_list(item: IdParam):
+async def select_coupon_list(user_id):
+    session.commit()
+
+    user = session.query(UserTable).filter(UserTable.id == user_id).first()
+    if not user:
+        raise_http_exception("유저 정보가 없습니다.")
+
+    couponList = session.query(CouponTable).filter(CouponTable.user_id == user.index).all()
+    return couponList
+
+
+@router.post("/select/newUserCoupon")
+async def select_new_user_coupon(item: IdParam):
     session.commit()
 
     user = session.query(UserTable).filter(UserTable.id == item.id).first()
     if not user:
         raise_http_exception("유저 정보가 없습니다.")
 
-    couponList = session.query(CouponTable).filter(CouponTable.user_id == user.index).all()
-    return couponList
+    data = session.query(CouponTable)\
+        .filter(CouponTable.user_id == user.index, CouponTable.name == "COUPON001").first()
+
+    return {
+        "userId": user.index,
+        "isIssued": bool(data)
+    }
+
+
+@router.post("/insert/newUserCoupon")
+async def insert_new_user_coupon(item: UserIdParam):
+    session.commit()
+
+    data = session.query(CouponTable) \
+        .filter(CouponTable.user_id == item.id, CouponTable.name == "COUPON001").first()
+
+    if data:
+        raise_http_exception("신규 가입 쿠폰을 이미 발급받으셨습니다.")
+
+    coupon = create_new_user_coupon(item.id)
+    session.add(coupon)
+    session.commit()
+
+
+@router.post("/insert/rouletteCoupon")
+async def insert_roulette_coupon(item: RouletteCoupon):
+    session.commit()
+
+    coupon = create_roulette_coupon(item)
+    session.add(coupon)
+    session.commit()
+
+    return await update_roulette(item=RouletteCountUpdateItem(id=item.id, count=-1))
 
 
 @router.post("/update/usingCoupon")
@@ -331,3 +376,26 @@ async def update_my_info(item: UpdateMyInfoItem):
 
     session.commit()
     return "업데이트 완료"
+
+
+@router.post("/select/roulette")
+async def select_roulette(item: UserIdParam):
+    session.commit()
+
+    lolketingUser = session.query(LolketingUserTable).filter(LolketingUserTable.user_id == item.id).first()
+    return {
+        "count": lolketingUser.roulette
+    }
+
+
+@router.post("/update/roulette")
+async def update_roulette(item: RouletteCountUpdateItem):
+    session.commit()
+
+    lolketingUser = session.query(LolketingUserTable).filter(LolketingUserTable.user_id == item.id).first()
+    lolketingUser.roulette = lolketingUser.roulette + item.count
+
+    session.commit()
+    return {
+        "count": lolketingUser.roulette
+    }
