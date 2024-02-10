@@ -176,6 +176,7 @@ async def select_my_info(item: IdParam):
     """
     session.commit()
     user_info_query = session.query(
+        UserTable.index,
         UserTable.nickname,
         UserTable.id,
         UserTable.mobile,
@@ -184,7 +185,6 @@ async def select_my_info(item: IdParam):
         LolketingUserTable.grade,
         LolketingUserTable.point,
         LolketingUserTable.cash,
-        CouponTable.id.label("couponId"),
         func.count(CouponTable.id).label("totalCoupons"),
         func.sum(func.cast(~CouponTable.isUsed, Integer)).label("availableCoupons")
     ).join(
@@ -203,7 +203,13 @@ async def select_my_info(item: IdParam):
         LolketingUserTable.cash
     ).first()
 
-    return user_info_query
+    # user_info_query를 딕셔너리로 변환
+    user_info_dict = dict(user_info_query)
+
+    couponList = session.query(CouponTable).filter(CouponTable.user_id == user_info_dict['index']).all()
+    user_info_dict['list'] = couponList
+
+    return user_info_dict
 
 
 @router.post("/select/cash")
@@ -269,11 +275,10 @@ def getUserGrade(point):
         return 'USER004'
 
 
-@router.post("/select/couponList")
-async def select_coupon_list(item: IdParam):
+async def select_coupon_list(user_id):
     session.commit()
 
-    user = session.query(UserTable).filter(UserTable.id == item.id).first()
+    user = session.query(UserTable).filter(UserTable.id == user_id).first()
     if not user:
         raise_http_exception("유저 정보가 없습니다.")
 
