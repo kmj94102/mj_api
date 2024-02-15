@@ -182,11 +182,11 @@ async def select_my_info(item: IdParam):
         LolketingUserTable.grade,
         LolketingUserTable.point,
         LolketingUserTable.cash,
-        func.count(CouponTable.id).label("totalCoupons"),
-        func.sum(func.cast(~CouponTable.isUsed, Integer)).label("availableCoupons")
+        func.coalesce(func.count(CouponTable.id), 0).label("totalCoupons"),
+        func.coalesce(func.sum(func.cast(~CouponTable.isUsed, Integer)), 0).label("availableCoupons")
     ).join(
         LolketingUserTable, UserTable.index == LolketingUserTable.user_id
-    ).join(
+    ).outerjoin(
         CouponTable, UserTable.index == CouponTable.user_id
     ).filter(
         UserTable.id == item.id,
