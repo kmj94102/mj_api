@@ -36,7 +36,7 @@ def check_email(email):
 
 def check_password(password):
     # 비밀번호를 검사하는 정규 표현식
-    pattern = r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{4,}$'
+    pattern = r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()])([A-Za-z\d!@#$%^&*()]{4,})$'
 
     # 비밀번호 패턴과 매치되는지 확인
     if re.match(pattern, password):
