@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>게임 등록</title>
+    <link rel="stylesheet" href="style.css"/>
+    <script src="network.js"></script>
+</head>
+<body>
+    <div id="container">
+        <h1>게임 등록</h1>
+        <form id="teamForm">
+            <label for="date">날짜:</label>
+            <input type="date" id="date" name="date" required><br><br>
+            
+            <label for="time">시간:</label>
+            <select id="time" name="time" required>
+                <option value="17:00">17:00</option>
+                <option value="20:00">20:00</option>
+            </select><br><br>
+
+            <button type="button" onclick="selectTeams()">팀 선택</button>
+        </form>
+
+        <div id="teamResult"></div>
+        <div id="register">등록</div>
+    </div>
+</body>
+</html>

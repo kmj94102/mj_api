@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from pydantic import BaseModel
 from datetime import datetime
+from typing import List
 from model.userModel import UserTable
 
 Base = declarative_base()
@@ -80,12 +81,12 @@ class Reservation(BaseModel):
     reservationDate: datetime
 
 
-def createReservation(gameId: int, seatId: int, userId: int) -> ReservationTable:
+def createReservation(gameId: int, seatId: int, userId: int, date: datetime) -> ReservationTable:
     reservation = ReservationTable()
     reservation.gameId = gameId
     reservation.seatId = seatId
     reservation.userId = userId
-    reservation.reservationDate = datetime.now()
+    reservation.reservationDate = date
 
     return reservation
 
@@ -95,6 +96,14 @@ class ReservationTicketItem(BaseModel):
     userId: int
     count: int
     seatNumber: str
+
+
+class GameIdParam(BaseModel):
+    gameId: int
+
+
+class TicketIdList(BaseModel):
+    idList: List[int]
 
 
 class CustomException(Exception):
