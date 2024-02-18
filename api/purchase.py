@@ -52,7 +52,18 @@ async def select_game():
         team2, team2.teamId == GameTable.rightTeamId
     ).all()
 
-    return data
+    formatted_data = []
+    for item in data:
+        game_id, game_date, left_team, right_team = item
+        formatted_item = {
+            "gameId": game_id,
+            "gameDate": game_date.strftime("%Y.%m.%d %H:%M"),
+            "leftTeam": left_team,
+            "rightTeam": right_team
+        }
+        formatted_data.append(formatted_item)
+
+    return formatted_data
 
 
 @router.post("/select/ReservedSeats")
@@ -148,6 +159,6 @@ def select_ticket_info(item: TicketIdList):
     return {
         "leftTeam": game["leftTeam"],
         "rightTeam": game["rightTeam"],
-        "time": game["gameDate"],
+        "time": game["gameDate"].strftime("%Y.%m.%d %H:%M"),
         "seats": seatIds
     }
