@@ -98,8 +98,9 @@ class ReservationTicketItem(BaseModel):
     seatNumber: str
 
 
-class GameIdParam(BaseModel):
+class TicketInfoParam(BaseModel):
     gameId: int
+    userId: int
 
 
 class TicketIdList(BaseModel):

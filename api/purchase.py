@@ -66,13 +66,37 @@ async def select_game():
     return formatted_data
 
 
-@router.post("/select/ReservedSeats")
-async def select_reserved_seats(item: GameIdParam):
+@router.post("/select/reservationInfo")
+async def select_ticket_info(item: TicketInfoParam):
     session.commit()
 
-    data = session.query(SeatTable.seatNumber).filter(SeatTable.gameId == item.gameId).all()
-    seat_numbers = [item["seatNumber"] for item in data]
+    seatData = session.query(SeatTable.seatNumber).filter(SeatTable.gameId == item.gameId).all()
+    seat_numbers = [item["seatNumber"] for item in seatData]
+
+    team1 = aliased(TeamTable)
+    team2 = aliased(TeamTable)
+
+    gameId, gameDate, leftTeam, rightTeam = session.query(
+        GameTable.gameId,
+        GameTable.gameDate,
+        team1.name.label("leftTeam"),
+        team2.name.label("rightTeam"),
+    ).join(
+        team1, team1.teamId == GameTable.leftTeamId
+    ).join(
+        team2, team2.teamId == GameTable.rightTeamId
+    ).where(
+        GameTable.gameId == item.gameId
+    ).first()
+
+    userData = session.query(LolketingUserTable.cash).filter(LolketingUserTable.user_id == item.userId).first()
+
     return {
+        "userId": item.userId,
+        "gameId": item.gameId,
+        "date": gameDate.strftime("%Y.%m.%d %H:%M"),
+        "gameTitle": f"{leftTeam} VS {rightTeam}",
+        "cash": userData.cash,
         "reservedSeats": seat_numbers
     }
 
