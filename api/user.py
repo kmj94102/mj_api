@@ -120,7 +120,7 @@ async def email_login(item: LoginInfo):
     else:
         return {
             'id': data.index,
-            'eamil': data.id,
+            'email': data.id,
             'nickname': data.nickname
         }
 
@@ -144,7 +144,7 @@ async def social_login(item: SocialLoginInfo):
     else:
         return {
             'id': data.index,
-            'eamil': data.id,
+            'email': data.id,
             'nickname': data.nickname
         }
 
