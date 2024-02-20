@@ -119,7 +119,8 @@ async def email_login(item: LoginInfo):
         raise_http_exception("아이디 또는 비밀번호를 확인해 주세요.")
     else:
         return {
-            'id': data.id,
+            'id': data.index,
+            'eamil': data.id,
             'nickname': data.nickname
         }
 
@@ -142,7 +143,8 @@ async def social_login(item: SocialLoginInfo):
         raise_http_exception("다른 로그인 방식으로 가입된 아이디입니다.")
     else:
         return {
-            'id': data.id,
+            'id': data.index,
+            'eamil': data.id,
             'nickname': data.nickname
         }
 
