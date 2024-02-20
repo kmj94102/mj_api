@@ -78,6 +78,7 @@ async def join_email(item: User):
     elif check_duplicate_nickname(item.nickname):
         raise_http_exception("중복된 닉네임입니다.")
 
+    userId = 0
     try:
         session.rollback()
         session.begin()
@@ -90,13 +91,14 @@ async def join_email(item: User):
         session.add(lolketing_user)
 
         session.commit()
+        userId = user.index
     except SQLAlchemyError as e:
         session.rollback()
         raise_http_exception(f"오류가 발생하였습니다. {e}")
     finally:
         session.close()
 
-    return "회원가입 완료"
+    return userId
 
 
 @router.post("/login/email")
