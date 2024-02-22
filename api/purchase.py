@@ -127,15 +127,20 @@ async def insert_reservation_ticket(item: ReservationTicketItem):
                 .filter(SeatTable.gameId == item.gameId, SeatTable.seatNumber == number).first()
             if beforeSeatInfo:
                 raise CustomException(500, "이미 예약된 좌석입니다.")
-
+            # 좌석 업데이트
             seat = create_seat(gameId=item.gameId, seatNumber=number)
             session.add(seat)
             session.flush()
-
+            # 예약 정보 추가
             reservation = createReservation(gameId=game.gameId, seatId=seat.seatId, userId=item.userId, date=date)
             session.add(reservation)
             session.flush()
             idList.append(reservation.reservationId)
+        # 캐시 차감 및 룰렛 횟수 증가
+        userData = session.query(LolketingUserTable).filter(LolketingUserTable.user_id == item.userId).first()
+        userData.cash -= 11_000 * item.count
+        userData.roulette += item.count
+
         session.commit()
     except CustomException as e:
         session.rollback()
@@ -186,3 +191,42 @@ def select_ticket_info(item: TicketIdList):
         "time": game["gameDate"].strftime("%Y.%m.%d %H:%M"),
         "seats": seatIds
     }
+
+
+@router.post("/select/history")
+async def select_purchase_history(item: IdParam):
+    session.commit()
+
+    team1 = aliased(TeamTable)
+    team2 = aliased(TeamTable)
+    data = session.query(
+        func.group_concat(ReservationTable.reservationId).label('reservationIds'),
+        GameTable.gameDate,
+        team1.name.label("leftTeam"),
+        team2.name.label("rightTeam")
+    ).filter(
+        ReservationTable.userId == item.id
+    ).group_by(
+        ReservationTable.reservationDate
+    ).join(
+        GameTable, GameTable.gameId == ReservationTable.gameId
+    ).join(
+        team1, team1.teamId == GameTable.leftTeamId
+    ).join(
+        team2, team2.teamId == GameTable.rightTeamId
+    ).all()
+
+    formatted_data = []
+    for item in data:
+        reservationIds, gameDate, leftTeam, rightTeam = item
+        formatted_item = {
+            "reservationIds": reservationIds,
+            "date": gameDate.strftime("%Y.%m.%d"),
+            "time": gameDate.strftime("%H:%M"),
+            "leftTeam": leftTeam,
+            "rightTeam": rightTeam
+        }
+        formatted_data.append(formatted_item)
+
+    return formatted_data
+
