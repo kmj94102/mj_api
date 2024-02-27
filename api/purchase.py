@@ -5,6 +5,7 @@ from db import session
 from sqlalchemy.orm import aliased
 from model.userModel import *
 from model.ticket import *
+from model.goods import *
 
 router = APIRouter()
 
@@ -230,3 +231,27 @@ async def select_purchase_history(item: IdParam):
 
     return formatted_data
 
+
+@router.post("/insert/goods")
+def insert_goods_item(item: GoodsInsertParam):
+    session.commit()
+
+    try:
+        session.rollback()
+        session.begin()
+        goods = create_goods_table(item=item)
+        session.add(goods)
+        session.flush()
+
+        for url in item.urlList:
+            goodsImage = create_goods_image_table(url=url, goodsId=goods.goodsId)
+            session.add(goodsImage)
+
+        session.commit()
+    except CustomException as e:
+        session.rollback()
+        raise_http_exception(e.message, e.code)
+    except Exception as e:
+        session.rollback()
+        print(e)
+        raise_http_exception("굿즈 상품 추가 중 오류가 발생하였습니다.")
