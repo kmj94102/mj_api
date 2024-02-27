@@ -75,7 +75,7 @@ function insertGame() {
         gameDate: dateTime,
         leftTeamId:selectedTeams[0]["teamId"],
         rightTeamId:selectedTeams[1]["teamId"]
-    }가
+    }
 
     fetch('https://port-0-mj-api-e9btb72blgnd5rgr.sel3.cloudtype.app/purchase/insert/game', {
          method: 'POST',
