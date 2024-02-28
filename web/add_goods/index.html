@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>굿즈 등록</title>
+    <link rel="stylesheet" href="style.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js" integrity="sha512-zYXldzJsDrNKV+odAwFYiDXV2Cy37cwizT+NkuiPGsa9X1dOz04eHvUWVuxaJ299GvcJT31ug2zO4itXBjFx4w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+    <div id="container">
+        <h1>굿즈 등록</h1>
+        <form id="teamForm">
+            <label for="category">카테고리:</label>
+            <select id="category" name="category" required>
+                <option value="스태츄">스태츄</option>
+                <option value="피규어">피규어</option>
+                <option value="인형">인형</option>
+                <option value="액세서리">액세서리</option>
+                <option value="의류">의류</option>
+            </select><br><br>
+
+            <label for="productName">이름:</label>
+            <input type="text" id="productName" name="productName" required><br><br>
+
+            <label for="price">가격:</label>
+            <input type="number" id="price" name="price" required><br><br>
+           
+            <label for="image">이미지:</label>
+            <input type="text" id="image" name="image" required>
+            <button onclick="addImage()">추가</button>
+            <div class="content">
+                <div class="preview" id="preview"></div>
+            </div>
+        </form>
+        <div id="teamResult"></div>
+        <div id="register">등록</div>
+    </div>
+    <script src="network.js"></script>
+
+    <link href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js" ></script>
+    <script type="text/javascript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.js" ></script>
+</body>
+</html>
