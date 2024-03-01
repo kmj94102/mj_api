@@ -327,7 +327,7 @@ def select_purchase_history(item: UserIdParam):
 
     data = session.query(
         PurchaseTable.amount,
-        PurchaseTable.amount,
+        PurchaseTable.datetime,
         GoodsTable.category,
         GoodsTable.name,
         (PurchaseTable.amount * GoodsTable.price).label("price"),
@@ -340,4 +340,17 @@ def select_purchase_history(item: UserIdParam):
         sub, sub.c.goodsId == GoodsTable.goodsId
     ).all()
 
-    return data
+    formatted_data = []
+    for item in data:
+        amount, datetime_, category, name, price, url = item
+        formatted_item = {
+            "amount": amount,
+            "category": category,
+            "name": name,
+            "price": price,
+            "image": url,
+            "date": datetime_.strftime("%Y.%m.%d"),
+        }
+        formatted_data.append(formatted_item)
+
+    return formatted_data
