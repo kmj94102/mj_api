@@ -194,7 +194,7 @@ def select_ticket_info(item: TicketIdList):
     }
 
 
-@router.post("/select/history")
+@router.post("/select/ticketHistory")
 async def select_purchase_history(item: IdParam):
     session.commit()
 
@@ -316,7 +316,7 @@ def insert_purchase(items: List[Purchase]):
     return "구입 성공"
 
 
-@router.post("/select/history2")
+@router.post("/select/GoodsHistory")
 def select_purchase_history(item: UserIdParam):
     session.commit()
 
