@@ -248,10 +248,96 @@ def insert_goods_item(item: GoodsInsertParam):
             session.add(goodsImage)
 
         session.commit()
+    except Exception as e:
+        session.rollback()
+        print(e)
+        raise_http_exception("굿즈 상품 추가 중 오류가 발생하였습니다.")
+
+
+@router.post("/select/goodsItems")
+def select_goods_items():
+    session.commit()
+
+    sub = session.query(
+        GoodsImageTable.goodsId,
+        func.min(GoodsImageTable.url).label("url")
+    ).group_by(GoodsImageTable.goodsId).subquery()
+
+    data = session.query(
+        GoodsTable.goodsId,
+        GoodsTable.category,
+        GoodsTable.name,
+        GoodsTable.price,
+        sub.c.url
+    ).join(
+        sub, sub.c.goodsId == GoodsTable.goodsId
+    ).all()
+
+    return data
+
+
+@router.post("/select/goodsItemDetail")
+def select_goods_item_detail(item: DetailParam):
+    session.commit()
+
+    imageList = session.query(GoodsImageTable.url).filter(GoodsImageTable.goodsId == item.id).all()
+    goods = session.query(GoodsTable).filter(GoodsTable.goodsId == item.id).first()
+
+    return {
+        "goodsId": goods.goodsId,
+        "category": goods.category,
+        "name": goods.name,
+        "price": goods.price,
+        "imageList": [image["url"] for image in imageList]
+    }
+
+
+@router.post("/insert/items")
+def insert_purchase(items: List[Purchase]):
+    try:
+        session.rollback()
+        session.begin()
+        time = datetime.now()
+        for item in items:
+            data = create_purchase_table(item=item, time=time)
+            if data.amount <= 0:
+                raise CustomException(400, "상품의 수량을 확인해 주세요.")
+            session.add(data)
+
+        session.commit()
     except CustomException as e:
         session.rollback()
         raise_http_exception(e.message, e.code)
     except Exception as e:
         session.rollback()
         print(e)
-        raise_http_exception("굿즈 상품 추가 중 오류가 발생하였습니다.")
+        raise_http_exception("상품 구매 중 오류가 발생하였습니다.")
+
+    return "구입 성공"
+
+
+@router.post("/select/history2")
+def select_purchase_history(item: UserIdParam):
+    session.commit()
+
+    sub = session.query(
+        GoodsImageTable.goodsId,
+        func.min(GoodsImageTable.url).label("url")
+    ).group_by(GoodsImageTable.goodsId).subquery()
+
+    data = session.query(
+        PurchaseTable.amount,
+        PurchaseTable.amount,
+        GoodsTable.category,
+        GoodsTable.name,
+        (PurchaseTable.amount * GoodsTable.price).label("price"),
+        sub.c.url
+    ).filter(
+        PurchaseTable.userId == item.id
+    ).join(
+        GoodsTable, GoodsTable.goodsId == PurchaseTable.goodsId
+    ).join(
+        sub, sub.c.goodsId == GoodsTable.goodsId
+    ).all()
+
+    return data

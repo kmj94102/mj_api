@@ -59,3 +59,32 @@ def create_goods_image_table(url: str, goodsId: int) -> GoodsImageTable:
     goodsImage.goodsId = goodsId
 
     return goodsImage
+
+
+class DetailParam(BaseModel):
+    id: int
+
+
+class PurchaseTable(Base):
+    __tablename__ = 'purchase'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    userId = Column(Integer)
+    goodsId = Column(Integer)
+    amount = Column(Integer)
+    datetime = Column(DateTime)
+
+
+class Purchase(BaseModel):
+    userId: int
+    goodsId: int
+    amount: int
+
+
+def create_purchase_table(item: Purchase, time: datetime) -> PurchaseTable:
+    purchase = PurchaseTable()
+    purchase.userId = item.userId
+    purchase.goodsId = item.goodsId
+    purchase.amount = item.amount
+    purchase.datetime = time
+
+    return purchase
