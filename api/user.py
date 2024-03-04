@@ -193,7 +193,7 @@ async def select_my_info(item: IdParam):
     ).outerjoin(
         CouponTable, UserTable.index == CouponTable.user_id
     ).filter(
-        UserTable.id == item.id,
+        UserTable.index == item.id,
     ).group_by(
         UserTable.nickname,
         UserTable.id,
@@ -230,7 +230,7 @@ async def select_cash(item: IdParam):
 async def cash_charging(item: CashChargingItem):
     session.commit()
 
-    user = session.query(UserTable).filter(UserTable.id == item.id).first()
+    user = session.query(UserTable).filter(UserTable.index == item.id).first()
     if not user:
         raise_http_exception("유저 정보가 없습니다.")
 

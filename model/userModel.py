@@ -100,7 +100,7 @@ class UserIdParam(BaseModel):
 
 
 class CashChargingItem(BaseModel):
-    id: str = None
+    id: int = None
     cash: int = None
 
 
