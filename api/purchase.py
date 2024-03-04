@@ -292,6 +292,24 @@ def select_goods_item_detail(item: DetailParam):
     }
 
 
+@router.post("/select/purchaseInfo")
+def select_purchase_info(item: UserIdParam):
+    session.commit()
+
+    data = session.query(
+        UserTable.nickname,
+        UserTable.mobile,
+        UserTable.address,
+        LolketingUserTable.cash
+    ).filter(
+        UserTable.index == item.id
+    ).join(
+        LolketingUserTable, LolketingUserTable.user_id == item.id
+    ).first()
+
+    return data
+
+
 @router.post("/insert/items")
 def insert_purchase(items: List[Purchase]):
     try:
