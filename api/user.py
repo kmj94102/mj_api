@@ -169,7 +169,7 @@ async def withdrawal(item: IdParam):
 
 
 @router.post("/select/myInfo")
-async def select_my_info(item: IdParam):
+async def select_my_info(item: UserIdParam):
     """
         내 정보 조회
         :param item:
