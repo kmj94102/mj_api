@@ -78,6 +78,7 @@ class Purchase(BaseModel):
     userId: int
     goodsId: int
     amount: int
+    productsPrice: int
 
 
 def create_purchase_table(item: Purchase, time: datetime) -> PurchaseTable:

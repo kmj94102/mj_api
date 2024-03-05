@@ -316,11 +316,17 @@ def insert_purchase(items: List[Purchase]):
         session.rollback()
         session.begin()
         time = datetime.now()
+        totalPrice = 0
         for item in items:
             data = create_purchase_table(item=item, time=time)
             if data.amount <= 0:
                 raise CustomException(400, "상품의 수량을 확인해 주세요.")
             session.add(data)
+            totalPrice += item.productsPrice
+
+        lolketingUser = session.query(LolketingUserTable).filter(LolketingUserTable.user_id == items[0].userId).first()
+        lolketingUser.cash -= totalPrice
+        session.add(lolketingUser)
 
         session.commit()
     except CustomException as e:
