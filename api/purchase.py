@@ -202,6 +202,7 @@ async def select_purchase_history(item: IdParam):
     team2 = aliased(TeamTable)
     data = session.query(
         func.group_concat(ReservationTable.reservationId).label('reservationIds'),
+        func.group_concat(ReservationTable.seatId).label('seatIds'),
         GameTable.gameDate,
         team1.name.label("leftTeam"),
         team2.name.label("rightTeam")
@@ -219,9 +220,14 @@ async def select_purchase_history(item: IdParam):
 
     formatted_data = []
     for item in data:
-        reservationIds, gameDate, leftTeam, rightTeam = item
+        reservationIds, seatIds, gameDate, leftTeam, rightTeam = item
+
+        seatData = session.query(SeatTable.seatNumber).filter(SeatTable.seatId.in_(seatIds.split(",")))
+        seatNumbers = ', '.join(name for name, in seatData)
+
         formatted_item = {
             "reservationIds": reservationIds,
+            "seatNumbers": seatNumbers,
             "date": gameDate.strftime("%Y.%m.%d"),
             "time": gameDate.strftime("%H:%M"),
             "leftTeam": leftTeam,
