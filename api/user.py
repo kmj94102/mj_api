@@ -336,7 +336,7 @@ async def insert_roulette_coupon(item: RouletteCoupon) -> RouletteCount:
 @router.post("/update/usingCoupon", summary="쿠폰 사용 업데이트")
 async def using_coupon(item: CouponUseItem) -> MyInfoResponse:
     """
-    - **id**: 유저 이메일
+    - **id**: 유저 인덱스
     - **couponId**: 쿠폰 아이디
     """
     session.commit()
@@ -350,15 +350,11 @@ async def using_coupon(item: CouponUseItem) -> MyInfoResponse:
     coupon.isUsed = True
     await update_point(coupon.rp, item.id)
 
-    return await select_my_info(UserIdParam(id=item.id))
+    return await select_my_info(item=UserIdParam(id=item.id))
 
 
 async def update_point(point, id_):
-    user = session.query(UserTable).filter(UserTable.id == id_).first()
-    if not user:
-        raise_http_exception("유저 정보가 없습니다.")
-
-    lolketingUser = session.query(LolketingUserTable).filter(LolketingUserTable.user_id == user.index).first()
+    lolketingUser = session.query(LolketingUserTable).filter(LolketingUserTable.user_id == id_).first()
     if not lolketingUser:
         raise_http_exception("유저 정보가 없습니다.")
 

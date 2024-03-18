@@ -106,7 +106,7 @@ class CashChargingItem(BaseModel):
 
 
 class CouponUseItem(BaseModel):
-    id: str = None
+    id: int = None
     couponId: int = None
 
 
