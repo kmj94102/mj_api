@@ -321,11 +321,16 @@ async def insert_roulette_coupon(item: RouletteCoupon) -> RouletteCount:
     """
     session.commit()
 
+    lolketingUser = session.query(LolketingUserTable).filter(LolketingUserTable.user_id == item.id).first()
+    if lolketingUser.roulette <= 0:
+        raise_http_exception("룰렛 횟수를 모두 소진하였습니다.")
+
     coupon = create_roulette_coupon(item)
     session.add(coupon)
+    lolketingUser.roulette = lolketingUser.roulette - 1
     session.commit()
 
-    return await update_roulette(item=RouletteCountUpdateItem(id=item.id, count=-1))
+    return RouletteCount(count=lolketingUser.roulette)
 
 
 @router.post("/update/usingCoupon", summary="쿠폰 사용 업데이트")
