@@ -1,16 +1,13 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import func, delete
 from db import session
 from model.userModel import *
 from model.couponModel import *
+from model.common import *
 import re
 
 router = APIRouter()
-
-
-def raise_http_exception(detail: str = "Error", status_code: int = 400):
-    raise HTTPException(status_code=status_code, detail=detail)
 
 
 def check_duplicate_id(id_: str):
@@ -45,12 +42,18 @@ def check_password(password):
         return False
 
 
-@router.post("/join/email")
-async def join_email(item: User):
+@router.post("/join/email", summary="회원가입")
+async def join_email(item: User) -> int:
     """
-    회원가입
-    :param item:
-    :return:
+    - **type**: 로그인 타입 (필수)
+    - **id**: 유저 이메일 (필수)
+    - **password**: 비밀번호 (이메일 회원가입 시 필수)
+    - **nickname**: 닉네임 (필수)
+    - **gender**: 성별
+    - **birthday** 생일
+    - **birthdayYear** 태어난 년도
+    - **mobile**: 핸드폰 번호
+    - **address**: 주소
     """
     session.commit()
 
@@ -101,12 +104,11 @@ async def join_email(item: User):
     return userId
 
 
-@router.post("/login/email")
-async def email_login(item: LoginInfo):
+@router.post("/login/email", summary="이메일 로그인")
+async def email_login(item: LoginInfo) -> LoginResponse:
     """
-    이메일 로그인
-    :param item:
-    :return:
+    - **id**: 유저 이메일
+    - **password**: 비밀번호
     """
     session.commit()
 
@@ -118,19 +120,14 @@ async def email_login(item: LoginInfo):
     elif data.password != item.password:
         raise_http_exception("아이디 또는 비밀번호를 확인해 주세요.")
     else:
-        return {
-            'id': data.index,
-            'email': data.id,
-            'nickname': data.nickname
-        }
+        return LoginResponse(id=data.index, email=data.id, nickname=data.nickname)
 
 
-@router.post("/login/social")
-async def social_login(item: SocialLoginInfo):
+@router.post("/login/social", summary="소셜 로그인")
+async def social_login(item: SocialLoginInfo) -> LoginResponse:
     """
-    소셜 로그인
-    :param item:
-    :return:
+    - **id**: 유저 이메일
+    - **type**: 로그인 타입
     """
     session.commit()
 
@@ -142,19 +139,13 @@ async def social_login(item: SocialLoginInfo):
     elif data.type != item.type:
         raise_http_exception("다른 로그인 방식으로 가입된 아이디입니다.")
     else:
-        return {
-            'id': data.index,
-            'email': data.id,
-            'nickname': data.nickname
-        }
+        return LoginResponse(id=data.index, email=data.id, nickname=data.nickname)
 
 
-@router.post("/withdrawal")
-async def withdrawal(item: IdParam):
+@router.post("/withdrawal", summary="회원 탈퇴")
+async def withdrawal(item: IdParam) -> TypeResponse:
     """
-        회원 탈퇴
-        :param item:
-        :return:
+    - **id**: 유저 이메일
     """
     session.commit()
     data = session.query(UserTable).filter(UserTable.id == item.id).first()
@@ -163,17 +154,13 @@ async def withdrawal(item: IdParam):
 
     session.execute(delete(UserTable).where(UserTable.id == item.id))
     session.commit()
-    return {
-        'type': data.type
-    }
+    return TypeResponse(type=data.type)
 
 
-@router.post("/select/myInfo")
-async def select_my_info(item: UserIdParam):
+@router.post("/select/myInfo", summary="내 정보 조회")
+async def select_my_info(item: UserIdParam) -> MyInfoResponse:
     """
-        내 정보 조회
-        :param item:
-        :return:
+    - **id**: 유저 인덱스
     """
     session.commit()
     user_info_query = session.query(
@@ -206,15 +193,14 @@ async def select_my_info(item: UserIdParam):
 
     # user_info_query를 딕셔너리로 변환
     user_info_dict = dict(user_info_query)
-
     couponList = session.query(CouponTable).filter(CouponTable.user_id == user_info_dict['index']).all()
-    user_info_dict['list'] = couponList
 
-    return user_info_dict
+    return convert_to_my_info_response(user_info_dict=user_info_dict, coupon_list=couponList)
 
 
-@router.post("/select/cash")
-async def select_cash(item: IdParam):
+# 현재 미사용
+@router.post("/select/cash", summary="내 캐시 조회")
+async def select_cash(item: IdParam) -> int:
     session.commit()
 
     user = session.query(UserTable).filter(UserTable.id == item.id).first()
@@ -226,8 +212,12 @@ async def select_cash(item: IdParam):
     return cash
 
 
-@router.post("/update/charging")
-async def cash_charging(item: CashChargingItem):
+@router.post("/update/charging", summary="캐시 충전")
+async def cash_charging(item: CashChargingItem) -> MyInfoResponse:
+    """
+    - **id**: 유저 인덱스
+    - **cash**: 충전할 금액
+    """
     session.commit()
 
     user = session.query(UserTable).filter(UserTable.index == item.id).first()
@@ -250,7 +240,7 @@ async def cash_charging(item: CashChargingItem):
     if lolketingUser.grade != 'USER005':
         lolketingUser.grade = getUserGrade(totalPoint)
 
-    return await select_my_info(IdParam(id=item.id))
+    return await select_my_info(item=UserIdParam(id=item.id))
 
 
 def calculate_charging(cash, chargingCash):
@@ -287,25 +277,29 @@ async def select_coupon_list(user_id):
     return couponList
 
 
-@router.post("/select/newUserCoupon")
-async def select_new_user_coupon(item: IdParam):
+# 수정 필요
+@router.post("/select/newUserCoupon", summary="신규 유저 쿠폰 발급 여부 조회")
+async def select_new_user_coupon(item: IdParam) -> bool:
+    """
+    - **id**: 유저 이메일
+    """
     session.commit()
 
     user = session.query(UserTable).filter(UserTable.id == item.id).first()
     if not user:
         raise_http_exception("유저 정보가 없습니다.")
 
-    data = session.query(CouponTable)\
+    data = session.query(CouponTable) \
         .filter(CouponTable.user_id == user.index, CouponTable.name == "COUPON001").first()
 
-    return {
-        "userId": user.index,
-        "isIssued": bool(data)
-    }
+    return bool(data)
 
 
-@router.post("/insert/newUserCoupon")
+@router.post("/insert/newUserCoupon", summary="신규 유저 쿠폰 발급")
 async def insert_new_user_coupon(item: UserIdParam):
+    """
+    - **id**: 유저 인덱스
+    """
     session.commit()
 
     data = session.query(CouponTable) \
@@ -319,8 +313,12 @@ async def insert_new_user_coupon(item: UserIdParam):
     session.commit()
 
 
-@router.post("/insert/rouletteCoupon")
-async def insert_roulette_coupon(item: RouletteCoupon):
+@router.post("/insert/rouletteCoupon", summary="룰렛 쿠폰 발급")
+async def insert_roulette_coupon(item: RouletteCoupon) -> RouletteCount:
+    """
+    - **id**: 유저 인덱스
+    - **rp**: 당첨된 RP
+    """
     session.commit()
 
     coupon = create_roulette_coupon(item)
@@ -330,8 +328,12 @@ async def insert_roulette_coupon(item: RouletteCoupon):
     return await update_roulette(item=RouletteCountUpdateItem(id=item.id, count=-1))
 
 
-@router.post("/update/usingCoupon")
-async def using_coupon(item: CouponUseItem):
+@router.post("/update/usingCoupon", summary="쿠폰 사용 업데이트")
+async def using_coupon(item: CouponUseItem) -> MyInfoResponse:
+    """
+    - **id**: 유저 이메일
+    - **couponId**: 쿠폰 아이디
+    """
     session.commit()
 
     coupon = session.query(CouponTable).filter(CouponTable.id == item.couponId).first()
@@ -343,7 +345,7 @@ async def using_coupon(item: CouponUseItem):
     coupon.isUsed = True
     await update_point(coupon.rp, item.id)
 
-    return await select_my_info(IdParam(id=item.id))
+    return await select_my_info(UserIdParam(id=item.id))
 
 
 async def update_point(point, id_):
@@ -365,8 +367,14 @@ async def update_point(point, id_):
     session.commit()
 
 
-@router.post("/update/myInfo")
-async def update_my_info(item: UpdateMyInfoItem):
+@router.post("/update/myInfo", summary="내 정보 업데이트")
+async def update_my_info(item: UpdateMyInfoItem) -> str:
+    """
+    - **id**: 유저 이메일 (필수)
+    - **nickname**: 닉네임 (필수)
+    - **mobile**: 핸드폰 번호
+    - **address**: 주소
+    """
     user = session.query(UserTable).filter(UserTable.id == item.id).first()
     if not user:
         raise_http_exception("유저 정보가 없습니다.")
@@ -382,24 +390,20 @@ async def update_my_info(item: UpdateMyInfoItem):
     return "업데이트 완료"
 
 
-@router.post("/select/roulette")
-async def select_roulette(item: UserIdParam):
+@router.post("/select/roulette", summary="룰렛 횟수 조회")
+async def select_roulette(item: UserIdParam) -> RouletteCount:
     session.commit()
 
     lolketingUser = session.query(LolketingUserTable).filter(LolketingUserTable.user_id == item.id).first()
-    return {
-        "count": lolketingUser.roulette
-    }
+    return RouletteCount(count=lolketingUser.roulette)
 
 
-@router.post("/update/roulette")
-async def update_roulette(item: RouletteCountUpdateItem):
+@router.post("/update/roulette", summary="룰렛 횟수 업데이트")
+async def update_roulette(item: RouletteCountUpdateItem) -> RouletteCount:
     session.commit()
 
     lolketingUser = session.query(LolketingUserTable).filter(LolketingUserTable.user_id == item.id).first()
     lolketingUser.roulette = lolketingUser.roulette + item.count
 
     session.commit()
-    return {
-        "count": lolketingUser.roulette
-    }
+    return RouletteCount(count=lolketingUser.roulette)

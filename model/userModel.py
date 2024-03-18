@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
+from typing import List, Dict
 
 from db import Base
 
@@ -114,3 +115,59 @@ class UpdateMyInfoItem(BaseModel):
     nickname: str = None
     mobile: str = None
     address: str = None
+
+
+class LoginResponse(BaseModel):
+    id: int
+    email: str
+    nickname: str
+
+
+class TypeResponse(BaseModel):
+    type: str
+
+
+class MyInfoCoupon(BaseModel):
+    rp: int
+    name: str
+    isUsed: bool
+    user_id: int
+    id: int
+    number: str
+    timestamp: datetime
+
+
+class MyInfoResponse(BaseModel):
+    index: int
+    nickname: str
+    id: str
+    mobile: str
+    address: str
+    lolketingId: int
+    grade: str
+    point: int
+    cash: int
+    totalCoupons: int
+    availableCoupons: int
+    list: List[MyInfoCoupon]
+
+
+def convert_to_my_info_response(user_info_dict: Dict, coupon_list: List) -> MyInfoResponse:
+    return MyInfoResponse(
+        index=user_info_dict['index'],
+        nickname=user_info_dict['nickname'],
+        id=user_info_dict['id'],
+        mobile=user_info_dict['mobile'],
+        address=user_info_dict['address'],
+        lolketingId=user_info_dict['lolketingId'],
+        grade=user_info_dict['grade'],
+        point=user_info_dict['point'],
+        cash=user_info_dict['cash'],
+        totalCoupons=user_info_dict['totalCoupons'],
+        availableCoupons=user_info_dict['availableCoupons'],
+        list=[MyInfoCoupon(**coupon.__dict__) for coupon in coupon_list]
+    )
+
+
+class RouletteCount(BaseModel):
+    count: int
