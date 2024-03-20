@@ -1,10 +1,8 @@
-from sqlalchemy import Column, Integer, DateTime, String, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, DateTime, String
 from sqlalchemy.ext.declarative import declarative_base
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List
-from model.userModel import UserTable
 
 Base = declarative_base()
 
@@ -89,3 +87,35 @@ def create_purchase_table(item: Purchase, time: datetime) -> PurchaseTable:
     purchase.datetime = time
 
     return purchase
+
+
+class ShopItem(BaseModel):
+    goodsId: int
+    category: str
+    name: str
+    price: int
+    url: str
+
+
+class ShopDetail(BaseModel):
+    goodsId: int
+    category: str
+    name: str
+    price: int
+    imageList: List[str]
+
+
+class PurchaseInfo(BaseModel):
+    nickname: str
+    mobile: str
+    address: str
+    cash: int
+
+
+class ShopPurchaseHistory(BaseModel):
+    amount: int
+    category: str
+    name: str
+    price: int
+    image: str
+    date: str

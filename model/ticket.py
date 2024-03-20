@@ -16,6 +16,12 @@ class TeamTable(Base):
     image = Column(String)
 
 
+class Team(BaseModel):
+    teamId: int
+    name: str
+    image: str
+
+
 class GameTable(Base):
     __tablename__ = 'game'
     gameId = Column(Integer, primary_key=True)
@@ -39,6 +45,14 @@ def create_game(item: Game) -> GameTable:
     game.rightTeamId = item.rightTeamId
 
     return game
+
+
+class TicketInfo(BaseModel):
+    gameId: int
+    gameDate: str
+    leftTeam: str
+    rightTeam: str
+    isSoldOut: bool
 
 
 class SeatTable(Base):
@@ -105,6 +119,31 @@ class TicketInfoParam(BaseModel):
 
 class TicketIdList(BaseModel):
     idList: List[int]
+
+
+class ReservationInfo(BaseModel):
+    userId: int
+    gameId: int
+    date: str
+    gameTitle: str
+    cash: int
+    reservedSeats: List[str]
+
+
+class ReservationTicketInfo(BaseModel):
+    leftTeam: str
+    rightTeam: str
+    time: str
+    seats: str
+
+
+class TicketHistoryInfo(BaseModel):
+    reservationIds: str
+    seatNumbers: str
+    date: str
+    time: str
+    leftTeam: str
+    rightTeam: str
 
 
 class CustomException(Exception):
