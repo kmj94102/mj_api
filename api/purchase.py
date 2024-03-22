@@ -70,7 +70,7 @@ async def select_game() -> List[TicketInfo]:
         gameId, gameDate, leftTeam, rightTeam = item
         count = session.query(func.count(SeatTable.seatId)).filter(SeatTable.gameId == gameId).scalar()
         ticketInfo = TicketInfo(gameId=gameId, gameDate=gameDate.strftime("%Y.%m.%d %H:%M"), leftTeam=leftTeam,
-                                rightTeam=rightTeam, isSoldOut=count <= 2)
+                                rightTeam=rightTeam, isSoldOut=count >= 2)
 
         ticketList.append(ticketInfo)
 
