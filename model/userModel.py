@@ -65,10 +65,10 @@ def create_user_table(item: User) -> UserTable:
 class LolketingUserTable(Base):
     __tablename__ = 'lolketing_user'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    cash = Column(Integer)
-    point = Column(Integer)
+    cash = Column(Integer, default=0)
+    point = Column(Integer, default=0)
     grade = Column(String(50))
-    roulette = Column(Integer)
+    roulette = Column(Integer, default=0)
     user_id = Column(Integer, ForeignKey('user.index'))
 
     user = relationship("UserTable", foreign_keys=[user_id])

@@ -87,6 +87,9 @@ class ReservationTable(Base):
     game = relationship("GameTable", back_populates="reservations")
     seat = relationship("SeatTable", back_populates="reservations")
 
+    def checkUserId(self, id_: int):
+        return self.userId == id_
+
 
 class Reservation(BaseModel):
     gameId: int
@@ -144,6 +147,11 @@ class TicketHistoryInfo(BaseModel):
     time: str
     leftTeam: str
     rightTeam: str
+
+
+class RefundInfo(BaseModel):
+    userId: int
+    reservationIds: List[int]
 
 
 class CustomException(Exception):

@@ -255,6 +255,47 @@ async def select_purchase_history(item: UserIdParam) -> List[TicketHistoryInfo]:
     return infoList
 
 
+@router.post("/delete/tickets", summary="티켓 환불")
+async def delete_tickets(item: RefundInfo) -> str:
+    """
+    - **userId**: 유저 인덱스
+    - **reservationIds**: 티켓 리스트
+    """
+    session.commit()
+    items = session.query(ReservationTable).filter(ReservationTable.reservationId.in_(item.reservationIds)).all()
+
+    if not any(reservation.checkUserId(item.userId) for reservation in items):
+        raise_http_exception("티켓 정보에 이상이 발생하였습니다.")
+
+    if items is None:
+        raise_http_exception("티켓 정보가 없습니다.")
+    gameId = items[0].gameId
+    if not all(reservation.gameId == gameId for reservation in items):
+        raise_http_exception("티켓 정보에 이상이 발생하였습니다.")
+
+    current_time = datetime.now()
+    ticketTime = session.query(GameTable.gameDate).filter(GameTable.gameId == gameId).first()
+
+    refund = 0
+    if ticketTime[0] > current_time + timedelta(days=1):
+        refund = len(items) * 11_000
+    elif ticketTime[0] > current_time:
+        refund = len(items) * 11_000 * 0.9
+    elif ticketTime[0] <= current_time - timedelta(hours=1):
+        raise_http_exception("환불 불가능", 500)
+
+    lolketingUser = session.query(LolketingUserTable).filter(LolketingUserTable.user_id == item.userId).first()
+    if not lolketingUser:
+        raise_http_exception("유저 정보가 없습니다.")
+
+    lolketingUser.cash += refund
+    for reservation in items:
+        session.delete(reservation)
+    session.commit()
+
+    return "환불 완료"
+
+
 @router.post("/insert/goods", summary="쇼핑 아이템 추가")
 def insert_goods_item(item: GoodsInsertParam) -> str:
     """
