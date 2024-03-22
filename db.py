@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 
 user_name = "root"
 user_pwd = "minjaedb"
-db_host = "mariadb:3306"
+db_host = "svc.sel3.cloudtype.app:30341"
 db_name = "pokemonDB"
 
 DATABASE = f"mysql+pymysql://{user_name}:{user_pwd}@{db_host}/{db_name}?charset=utf8"
