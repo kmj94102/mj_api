@@ -10,6 +10,7 @@ class ChattingListParam(BaseModel):
 
 class ChattingRoomInfo(BaseModel):
     gameId: int
+    gameDate: str
     gameTime: str
     leftTeam: str
     rightTeam: str

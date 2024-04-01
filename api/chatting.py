@@ -36,8 +36,8 @@ async def select_chatting_list(item: ChattingListParam) -> List[ChattingRoomInfo
     gameList = []
     for item in data:
         gameId, gameDate, leftTeam, rightTeam = item
-        gameInfo = ChattingRoomInfo(gameId=gameId, gameTime=gameDate.strftime("%H:%M"), leftTeam=leftTeam,
-                                    rightTeam=rightTeam)
+        gameInfo = ChattingRoomInfo(gameId=gameId, gameDate=gameDate.strftime("%Y.%m.%d"),
+                                    gameTime=gameDate.strftime("%H:%M"), leftTeam=leftTeam, rightTeam=rightTeam)
 
         gameList.append(gameInfo)
 
