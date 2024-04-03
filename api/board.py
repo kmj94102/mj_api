@@ -10,8 +10,8 @@ router = APIRouter()
 
 
 @router.post("/insert/board", summary="게시글 등록")
-async def insert_board(item: Board) -> str:
-    board = BoardTable(**item.dict())
+async def insert_board(item: BoardWriteParam) -> str:
+    board = item.toTable()
     session.add(board)
     session.commit()
 
@@ -87,8 +87,8 @@ async def select_board(boardId: int) -> BoardItem:
 
 
 @router.post("/insert/comment", summary="댓글 등록")
-async def insert_comment(item: Comment) -> str:
-    comment = CommentTable(**item.dict())
+async def insert_comment(item: CommentWriteParam) -> str:
+    comment = item.toTable()
     session.add(comment)
     session.commit()
 

@@ -83,3 +83,33 @@ class BoardItem(BaseModel):
     nickname: str
     likeCount: int
     commentCount: int
+
+
+class BoardWriteParam(BaseModel):
+    contents: str
+    image: str
+    teamId: int
+    userId: int
+
+    def toTable(self) -> BoardTable:
+        return BoardTable(
+            contents=self.contents,
+            image=self.image,
+            timestamp=datetime.now(),
+            teamId=self.teamId,
+            userId=self.userId
+        )
+
+
+class CommentWriteParam(BaseModel):
+    contents: str
+    userId: int
+    boardId: int
+
+    def toTable(self) -> CommentTable:
+        return CommentTable(
+            contents=self.contents,
+            timestamp=datetime.now(),
+            userId=self.userId,
+            boardId=self.boardId
+        )
