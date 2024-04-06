@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, DateTime, Text
 from pydantic import BaseModel
 from db import Base
 from datetime import datetime
+from typing import List
 
 
 class Board(BaseModel):
@@ -121,3 +122,20 @@ class CommentWriteParam(BaseModel):
             userId=self.userId,
             boardId=self.boardId
         )
+
+
+class BoardDetail(BaseModel):
+    id: int
+    contents: str
+    image: str
+    timestamp: str
+    name: str
+    nickname: str
+    likeCount: int
+    isLike: bool
+    commentList: List[Comment]
+
+
+class BoardDetailParam(BaseModel):
+    boardId: int
+    userId: int
