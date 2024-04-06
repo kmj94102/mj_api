@@ -21,6 +21,7 @@ async def insert_board(item: BoardWriteParam) -> str:
 @router.post("/select/boards", summary="게시글 조회")
 async def select_boards(item: BoardSelectParam) -> List[BoardItem]:
     session.commit()
+
     boards = session.query(
         BoardTable.id,
         BoardTable.contents,
@@ -28,24 +29,20 @@ async def select_boards(item: BoardSelectParam) -> List[BoardItem]:
         BoardTable.timestamp,
         TeamTable.name,
         UserTable.nickname,
-        func.coalesce(func.count(BoardLikeTable.id), 0).label("likeCount"),
-        func.coalesce(func.count(CommentTable.id), 0).label("commentCount"),
     ).join(
         TeamTable, TeamTable.teamId == BoardTable.teamId
     ).join(
         UserTable, UserTable.index == BoardTable.userId
-    ).outerjoin(
-        BoardLikeTable, BoardLikeTable.boardId == BoardTable.id
-    ).outerjoin(
-        CommentTable, CommentTable.boardId == BoardTable.id
     ).group_by(
         BoardTable.id
     ).offset(item.skip).limit(item.limit).all()
 
     result = []
     for board in boards:
-        boardId, contents, image, timestamp, name, nickname, likeCount, commentCount = board
+        boardId, contents, image, timestamp, name, nickname = board
 
+        likeCount = session.query(BoardLikeTable).filter(BoardLikeTable.boardId == boardId).count()
+        commentCount = session.query(CommentTable).filter(CommentTable.boardId == boardId).count()
         isLike = session.query(BoardLikeTable).filter(
             and_(BoardLikeTable.userId == item.userId, BoardLikeTable.boardId == boardId)
         ).first() is not None
@@ -66,24 +63,19 @@ async def select_board(boardId: int, userId: int) -> BoardItem:
         BoardTable.image,
         BoardTable.timestamp,
         TeamTable.name,
-        UserTable.nickname,
-        func.coalesce(func.count(BoardLikeTable.id), 0).label("likeCount"),
-        func.coalesce(func.count(CommentTable.id), 0).label("commentCount"),
+        UserTable.nickname
     ).filter(
         BoardTable.id == boardId
     ).join(
         TeamTable, TeamTable.teamId == BoardTable.teamId
     ).join(
         UserTable, UserTable.index == BoardTable.userId
-    ).outerjoin(
-        BoardLikeTable, BoardLikeTable.boardId == BoardTable.id
-    ).outerjoin(
-        CommentTable, CommentTable.boardId == BoardTable.id
-    ).group_by(
-        BoardTable.id
     ).first()
 
-    id_, contents, image, timestamp, name, nickname, likeCount, commentCount = board
+    id_, contents, image, timestamp, name, nickname = board
+
+    likeCount = session.query(BoardLikeTable).filter(BoardLikeTable.boardId == boardId).count()
+    commentCount = session.query(CommentTable).filter(CommentTable.boardId == boardId).count()
     isLike = session.query(BoardLikeTable).filter(
         and_(BoardLikeTable.userId == userId, BoardLikeTable.boardId == boardId)
     ).first() is not None
@@ -135,29 +127,24 @@ async def select_comments(boardId: int) -> List[Comment]:
 @router.post("/select/boardDetail", summary="게시글 상세 조회")
 async def select_board_detail(item: BoardDetailParam) -> BoardDetail:
     session.commit()
+
     board = session.query(
-        BoardTable.id,
         BoardTable.contents,
         BoardTable.image,
         BoardTable.timestamp,
         TeamTable.name,
         UserTable.nickname,
-        func.coalesce(func.count(BoardLikeTable.id), 0).label("likeCount"),
     ).filter(
         BoardTable.id == item.boardId
     ).join(
         TeamTable, TeamTable.teamId == BoardTable.teamId
     ).join(
         UserTable, UserTable.index == BoardTable.userId
-    ).outerjoin(
-        BoardLikeTable, BoardLikeTable.boardId == BoardTable.id
-    ).outerjoin(
-        CommentTable, CommentTable.boardId == BoardTable.id
-    ).group_by(
-        BoardTable.id
     ).first()
 
-    id_, contents, image, timestamp, name, nickname, likeCount = board
+    contents, image, timestamp, name, nickname = board
+
+    likeCount = session.query(BoardLikeTable).filter(BoardLikeTable.boardId == item.boardId).count()
     isLike = session.query(BoardLikeTable).filter(
         and_(BoardLikeTable.userId == item.userId, BoardLikeTable.boardId == item.boardId)
     ).first() is not None
