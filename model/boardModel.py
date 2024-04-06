@@ -26,7 +26,7 @@ class BoardTable(Base):
 class Comment(BaseModel):
     id: int = 0
     contents: str = None
-    timestamp: datetime = None
+    timestamp: str = None
     userId: int = None
     boardId: int = None
 
@@ -43,7 +43,7 @@ class CommentTable(Base):
         comment = Comment()
         comment.id = self.id
         comment.contents = self.contents
-        comment.timestamp = self.timestamp
+        comment.timestamp = self.timestamp.strftime("%Y.%m.%d %H:%M")
         comment.userId = self.userId
         comment.boardId = self.boardId
         return comment
@@ -58,9 +58,15 @@ class BoardLikeTable(Base):
 
 
 class BoardLike(BaseModel):
-    timestamp: datetime = None
     userId: int = None
     boardId: int = None
+
+    def toTable(self) -> BoardLikeTable:
+        return BoardLikeTable(
+            timestamp=datetime.now(),
+            userId=self.userId,
+            boardId=self.boardId
+        )
 
 
 class BoardSelectParam(BaseModel):

@@ -127,7 +127,7 @@ async def update_board_like(item: BoardLike) -> BoardItem:
         session.delete(boardLike)
         session.commit()
     else:
-        boardLike = BoardLikeTable(**item.dict())
+        boardLike = item.toTable()
         session.add(boardLike)
         session.commit()
 
