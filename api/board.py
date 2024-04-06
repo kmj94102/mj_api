@@ -107,8 +107,29 @@ async def insert_comment(item: CommentWriteParam) -> str:
 @router.post("/select/commentList", summary="댓글 조회")
 async def select_comments(boardId: int) -> List[Comment]:
     session.commit()
-    comments = session.query(CommentTable).filter(CommentTable.boardId == boardId).all()
-    return [comment.mapper() for comment in comments]
+
+    comments = session.query(
+        CommentTable.id.label("commentId"),
+        CommentTable.contents,
+        CommentTable.timestamp,
+        CommentTable.boardId,
+        CommentTable.userId,
+        UserTable.nickname
+    ).filter(
+        CommentTable.boardId == boardId
+    ).join(
+        UserTable, UserTable.index == CommentTable.userId
+    ).all()
+
+    result = []
+    for comment in comments:
+        commentId, contents, timestamp, boardId, userId, nickname = comment
+        result.append(
+            Comment(commentId=commentId, contents=contents, timestamp=timestamp.strftime("%Y.%m.%d %H:%M"),
+                    boardId=boardId, userId=userId, nickname=nickname)
+        )
+
+    return result
 
 
 @router.post("/select/boardDetail", summary="게시글 상세 조회")
