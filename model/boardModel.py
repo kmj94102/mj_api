@@ -72,6 +72,7 @@ class BoardLike(BaseModel):
 class BoardSelectParam(BaseModel):
     skip: int = 0
     limit: int = 10
+    userId: int
 
 
 class CommentDeleteParam(BaseModel):
@@ -88,6 +89,7 @@ class BoardItem(BaseModel):
     name: str
     nickname: str
     likeCount: int
+    isLike: bool
     commentCount: int
 
 

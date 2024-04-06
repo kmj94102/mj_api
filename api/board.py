@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from sqlalchemy import func
+from sqlalchemy import func, and_
 from db import session
 from model.boardModel import *
 from model.ticket import *
@@ -45,15 +45,20 @@ async def select_boards(item: BoardSelectParam) -> List[BoardItem]:
     result = []
     for board in boards:
         boardId, contents, image, timestamp, name, nickname, likeCount, commentCount = board
+
+        isLike = session.query(BoardLikeTable).filter(
+            and_(BoardLikeTable.userId == item.userId, BoardLikeTable.boardId == boardId)
+        ).first() is not None
+
         boardItem = BoardItem(id=boardId, contents=contents, image=image,
                               timestamp=timestamp.strftime("%Y.%m.%d %H:%M"), name=name, nickname=nickname,
-                              likeCount=likeCount, commentCount=commentCount)
+                              likeCount=likeCount, isLike=isLike, commentCount=commentCount)
         result.append(boardItem)
 
     return result
 
 
-async def select_board(boardId: int) -> BoardItem:
+async def select_board(boardId: int, userId: int) -> BoardItem:
     session.commit()
     board = session.query(
         BoardTable.id,
@@ -79,9 +84,13 @@ async def select_board(boardId: int) -> BoardItem:
     ).first()
 
     id_, contents, image, timestamp, name, nickname, likeCount, commentCount = board
+    isLike = session.query(BoardLikeTable).filter(
+        and_(BoardLikeTable.userId == userId, BoardLikeTable.boardId == boardId)
+    ).first() is not None
+
     boardItem = BoardItem(id=boardId, contents=contents, image=image,
                           timestamp=timestamp.strftime("%Y.%m.%d %H:%M"), name=name, nickname=nickname,
-                          likeCount=likeCount, commentCount=commentCount)
+                          likeCount=likeCount, isLike=isLike, commentCount=commentCount)
 
     return boardItem
 
@@ -131,4 +140,4 @@ async def update_board_like(item: BoardLike) -> BoardItem:
         session.add(boardLike)
         session.commit()
 
-    return await select_board(item.boardId)
+    return await select_board(item.boardId, item.userId)
