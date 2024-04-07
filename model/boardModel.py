@@ -50,11 +50,11 @@ class BoardLikeTable(Base):
     boardId = Column(Integer)
 
 
-class BoardLike(BaseModel):
+class BoardIdInfoParam(BaseModel):
     userId: int = None
     boardId: int = None
 
-    def toTable(self) -> BoardLikeTable:
+    def toBoardLikeTable(self) -> BoardLikeTable:
         return BoardLikeTable(
             timestamp=datetime.now(),
             userId=self.userId,

@@ -3,6 +3,7 @@ from sqlalchemy import func, and_
 from db import session
 from model.boardModel import *
 from model.ticket import *
+from model.common import raise_http_exception
 
 from typing import List
 
@@ -85,6 +86,22 @@ async def select_board(boardId: int, userId: int) -> BoardItem:
                           likeCount=likeCount, isLike=isLike, commentCount=commentCount)
 
     return boardItem
+
+
+@router.post("/delete/board", summary="게시글 삭제")
+async def deleteBoard(item: BoardIdInfoParam) -> str:
+    session.commit()
+    board = session.query(BoardTable).filter(BoardTable.id == item.boardId).first()
+
+    if board is None:
+        raise_http_exception("게시글 정보가 없습니다.")
+    elif board.userId != item.userId:
+        raise_http_exception("직접 작성한 게시글만 삭제하실 수 있습니다.")
+    else:
+        session.delete(board)
+        session.commit()
+
+    return "삭제 완료"
 
 
 @router.post("/insert/comment", summary="댓글 등록")
@@ -172,7 +189,7 @@ async def delete_comment(item: CommentDeleteParam) -> List[Comment]:
 
 
 @router.post("/update/boardLike", summary="게시글 좋아요 업데이트")
-async def update_board_like(item: BoardLike) -> BoardItem:
+async def update_board_like(item: BoardIdInfoParam) -> BoardItem:
     session.commit()
 
     boardLike = session.query(BoardLikeTable).filter(
@@ -183,7 +200,7 @@ async def update_board_like(item: BoardLike) -> BoardItem:
         session.delete(boardLike)
         session.commit()
     else:
-        boardLike = item.toTable()
+        boardLike = item.toBoardLikeTable()
         session.add(boardLike)
         session.commit()
 
