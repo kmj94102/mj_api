@@ -31,6 +31,7 @@ class Comment(BaseModel):
     boardId: int = None
     userId: int = None
     nickname: str = None
+    isAuthor: bool = None
 
 
 class CommentTable(Base):
@@ -78,6 +79,7 @@ class BoardItem(BaseModel):
     id: int
     contents: str
     image: str
+    isAuthor: bool
     timestamp: str
     name: str
     nickname: str

@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from sqlalchemy import func, and_
+from sqlalchemy import and_
 from db import session
 from model.boardModel import *
 from model.ticket import *
@@ -28,6 +28,7 @@ async def select_boards(item: BoardSelectParam) -> List[BoardItem]:
         BoardTable.contents,
         BoardTable.image,
         BoardTable.timestamp,
+        BoardTable.userId,
         TeamTable.name,
         UserTable.nickname,
     ).join(
@@ -36,19 +37,22 @@ async def select_boards(item: BoardSelectParam) -> List[BoardItem]:
         UserTable, UserTable.index == BoardTable.userId
     ).group_by(
         BoardTable.id
+    ).order_by(
+        BoardTable.timestamp.desc()
     ).offset(item.skip).limit(item.limit).all()
 
     result = []
     for board in boards:
-        boardId, contents, image, timestamp, name, nickname = board
+        boardId, contents, image, timestamp, userId, name, nickname = board
 
         likeCount = session.query(BoardLikeTable).filter(BoardLikeTable.boardId == boardId).count()
         commentCount = session.query(CommentTable).filter(CommentTable.boardId == boardId).count()
         isLike = session.query(BoardLikeTable).filter(
             and_(BoardLikeTable.userId == item.userId, BoardLikeTable.boardId == boardId)
         ).first() is not None
+        isAuthor = item.userId == userId
 
-        boardItem = BoardItem(id=boardId, contents=contents, image=image,
+        boardItem = BoardItem(id=boardId, contents=contents, image=image, isAuthor=isAuthor,
                               timestamp=timestamp.strftime("%Y.%m.%d %H:%M"), name=name, nickname=nickname,
                               likeCount=likeCount, isLike=isLike, commentCount=commentCount)
         result.append(boardItem)
@@ -62,6 +66,7 @@ async def select_board(boardId: int, userId: int) -> BoardItem:
         BoardTable.id,
         BoardTable.contents,
         BoardTable.image,
+        BoardTable.userId,
         BoardTable.timestamp,
         TeamTable.name,
         UserTable.nickname
@@ -73,15 +78,16 @@ async def select_board(boardId: int, userId: int) -> BoardItem:
         UserTable, UserTable.index == BoardTable.userId
     ).first()
 
-    id_, contents, image, timestamp, name, nickname = board
+    id_, contents, image, boardUserId, timestamp, name, nickname = board
 
     likeCount = session.query(BoardLikeTable).filter(BoardLikeTable.boardId == boardId).count()
     commentCount = session.query(CommentTable).filter(CommentTable.boardId == boardId).count()
     isLike = session.query(BoardLikeTable).filter(
         and_(BoardLikeTable.userId == userId, BoardLikeTable.boardId == boardId)
     ).first() is not None
+    isAuthor = boardUserId == userId
 
-    boardItem = BoardItem(id=boardId, contents=contents, image=image,
+    boardItem = BoardItem(id=boardId, contents=contents, image=image, isAuthor=isAuthor,
                           timestamp=timestamp.strftime("%Y.%m.%d %H:%M"), name=name, nickname=nickname,
                           likeCount=likeCount, isLike=isLike, commentCount=commentCount)
 
@@ -105,16 +111,16 @@ async def deleteBoard(item: BoardIdInfoParam) -> str:
 
 
 @router.post("/insert/comment", summary="댓글 등록")
-async def insert_comment(item: CommentWriteParam) -> str:
+async def insert_comment(item: CommentWriteParam) -> List[Comment]:
     comment = item.toTable()
     session.add(comment)
     session.commit()
 
-    return "등록 완료"
+    return await select_comments(item.boardId, item.userId)
 
 
 @router.post("/select/commentList", summary="댓글 조회")
-async def select_comments(boardId: int) -> List[Comment]:
+async def select_comments(boardId: int, userId: int) -> List[Comment]:
     session.commit()
 
     comments = session.query(
@@ -132,10 +138,11 @@ async def select_comments(boardId: int) -> List[Comment]:
 
     result = []
     for comment in comments:
-        commentId, contents, timestamp, boardId, userId, nickname = comment
+        commentId, contents, timestamp, boardId, commentUserId, nickname = comment
+        isAuthor = commentUserId == userId
         result.append(
             Comment(commentId=commentId, contents=contents, timestamp=timestamp.strftime("%Y.%m.%d %H:%M"),
-                    boardId=boardId, userId=userId, nickname=nickname)
+                    boardId=boardId, userId=commentUserId, nickname=nickname, isAuthor=isAuthor)
         )
 
     return result
@@ -148,6 +155,7 @@ async def select_board_detail(item: BoardDetailParam) -> BoardDetail:
     board = session.query(
         BoardTable.contents,
         BoardTable.image,
+        BoardTable.userId,
         BoardTable.timestamp,
         TeamTable.name,
         UserTable.nickname,
@@ -159,15 +167,16 @@ async def select_board_detail(item: BoardDetailParam) -> BoardDetail:
         UserTable, UserTable.index == BoardTable.userId
     ).first()
 
-    contents, image, timestamp, name, nickname = board
+    contents, image, userId, timestamp, name, nickname = board
 
     likeCount = session.query(BoardLikeTable).filter(BoardLikeTable.boardId == item.boardId).count()
     isLike = session.query(BoardLikeTable).filter(
         and_(BoardLikeTable.userId == item.userId, BoardLikeTable.boardId == item.boardId)
     ).first() is not None
-    commentList = await select_comments(boardId=item.boardId)
+    commentList = await select_comments(boardId=item.boardId, userId=item.userId)
+    isAuthor = item.userId == userId
 
-    boardItem = BoardDetail(id=item.boardId, contents=contents, image=image,
+    boardItem = BoardDetail(id=item.boardId, contents=contents, image=image, isAuthor=isAuthor,
                             timestamp=timestamp.strftime("%Y.%m.%d %H:%M"), name=name, nickname=nickname,
                             likeCount=likeCount, isLike=isLike, commentList=commentList)
 
@@ -185,7 +194,7 @@ async def delete_comment(item: CommentDeleteParam) -> List[Comment]:
         session.delete(comment)
         session.commit()
 
-    return await select_comments(item.boardId)
+    return await select_comments(item.boardId, item.userId)
 
 
 @router.post("/update/boardLike", summary="게시글 좋아요 업데이트")
