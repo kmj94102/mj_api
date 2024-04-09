@@ -122,6 +122,7 @@ class BoardDetail(BaseModel):
     id: int
     contents: str
     image: str
+    isAuthor: bool
     timestamp: str
     name: str
     nickname: str
