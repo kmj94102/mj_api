@@ -94,6 +94,58 @@ async def select_board(boardId: int, userId: int) -> BoardItem:
     return boardItem
 
 
+@router.post("/select/boardDetail", summary="게시글 상세 조회")
+async def select_board_detail(item: BoardDetailParam) -> BoardDetail:
+    session.commit()
+
+    board = session.query(
+        BoardTable.contents,
+        BoardTable.image,
+        BoardTable.userId,
+        BoardTable.timestamp,
+        TeamTable.name,
+        UserTable.nickname,
+    ).filter(
+        BoardTable.id == item.boardId
+    ).join(
+        TeamTable, TeamTable.teamId == BoardTable.teamId
+    ).join(
+        UserTable, UserTable.index == BoardTable.userId
+    ).first()
+
+    contents, image, userId, timestamp, name, nickname = board
+
+    likeCount = session.query(BoardLikeTable).filter(BoardLikeTable.boardId == item.boardId).count()
+    isLike = session.query(BoardLikeTable).filter(
+        and_(BoardLikeTable.userId == item.userId, BoardLikeTable.boardId == item.boardId)
+    ).first() is not None
+    commentList = await select_comments(boardId=item.boardId, userId=item.userId)
+    isAuthor = item.userId == userId
+
+    boardItem = BoardDetail(id=item.boardId, contents=contents, image=image, isAuthor=isAuthor,
+                            timestamp=timestamp.strftime("%Y.%m.%d %H:%M"), name=name, nickname=nickname,
+                            likeCount=likeCount, isLike=isLike, commentList=commentList)
+
+    return boardItem
+
+
+@router.post("/update/board", summary="게시글 수정")
+async def updateBoard(item: Board) -> str:
+    board = session.query(BoardTable).filter(BoardTable.id == item.id).first()
+
+    if board is None:
+        raise_http_exception("게시글 정보가 없습니다.")
+    elif item.userId != board.userId:
+        raise_http_exception("게시글 수정은 작성자만 가능합니다.")
+
+    board.contents = item.contents
+    board.image = item.image
+    board.teamId = item.teamId
+    session.commit()
+
+    return "게시글 수정 완료"
+
+
 @router.post("/delete/board", summary="게시글 삭제")
 async def deleteBoard(item: BoardIdInfoParam) -> str:
     session.commit()
@@ -148,39 +200,20 @@ async def select_comments(boardId: int, userId: int) -> List[Comment]:
     return result
 
 
-@router.post("/select/boardDetail", summary="게시글 상세 조회")
-async def select_board_detail(item: BoardDetailParam) -> BoardDetail:
+@router.post("/update/comment", summary="댓글 수정")
+async def updateComment(item: Comment) -> str:
+    comment = session.query(CommentTable).filter(CommentTable.id == item.commentId).first()
+
+    if comment is None or comment.boardId != item.boardId:
+        raise_http_exception("댓글 정보가 없습니다.")
+    elif item.userId != comment.userId:
+        raise_http_exception("댓글 수정은 작성자만 가능합니다.")
+
+    comment.contents = item.contents
+
     session.commit()
 
-    board = session.query(
-        BoardTable.contents,
-        BoardTable.image,
-        BoardTable.userId,
-        BoardTable.timestamp,
-        TeamTable.name,
-        UserTable.nickname,
-    ).filter(
-        BoardTable.id == item.boardId
-    ).join(
-        TeamTable, TeamTable.teamId == BoardTable.teamId
-    ).join(
-        UserTable, UserTable.index == BoardTable.userId
-    ).first()
-
-    contents, image, userId, timestamp, name, nickname = board
-
-    likeCount = session.query(BoardLikeTable).filter(BoardLikeTable.boardId == item.boardId).count()
-    isLike = session.query(BoardLikeTable).filter(
-        and_(BoardLikeTable.userId == item.userId, BoardLikeTable.boardId == item.boardId)
-    ).first() is not None
-    commentList = await select_comments(boardId=item.boardId, userId=item.userId)
-    isAuthor = item.userId == userId
-
-    boardItem = BoardDetail(id=item.boardId, contents=contents, image=image, isAuthor=isAuthor,
-                            timestamp=timestamp.strftime("%Y.%m.%d %H:%M"), name=name, nickname=nickname,
-                            likeCount=likeCount, isLike=isLike, commentList=commentList)
-
-    return boardItem
+    return "댓글 수정 완료"
 
 
 @router.post("/delete/comment", summary="댓글 삭제")
