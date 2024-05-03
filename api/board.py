@@ -23,6 +23,11 @@ async def insert_board(item: BoardWriteParam) -> str:
 async def select_boards(item: BoardSelectParam) -> List[BoardItem]:
     session.commit()
 
+    if item.teamId == 0:
+        tableIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    else:
+        tableIds = [item.teamId]
+
     boards = session.query(
         BoardTable.id,
         BoardTable.contents,
@@ -31,6 +36,8 @@ async def select_boards(item: BoardSelectParam) -> List[BoardItem]:
         BoardTable.userId,
         TeamTable.name,
         UserTable.nickname,
+    ).filter(
+        BoardTable.teamId.in_(tableIds)
     ).join(
         TeamTable, TeamTable.teamId == BoardTable.teamId
     ).join(
@@ -154,7 +161,7 @@ async def deleteBoard(item: BoardIdInfoParam) -> str:
     if board is None:
         raise_http_exception("게시글 정보가 없습니다.")
     elif board.userId != item.userId:
-        raise_http_exception("직접 작성한 게시글만 삭제하실 수 있습니다.")
+        raise_http_exception("게시글 삭제는 작성자만 가능합니다.")
     else:
         session.delete(board)
         session.commit()
@@ -220,10 +227,14 @@ async def updateComment(item: Comment) -> str:
 async def delete_comment(item: CommentDeleteParam) -> List[Comment]:
     session.commit()
     comment = session.query(CommentTable).filter(
-        CommentTable.id == item.commentId, CommentTable.userId == item.userId
+        CommentTable.id == item.commentId
     ).first()
 
-    if comment:
+    if comment is None or comment.boardId != item.boardId:
+        raise_http_exception("댓글 정보가 없습니다.")
+    elif item.userId != comment.userId:
+        raise_http_exception("댓글 삭제는 작성자만 가능합니다.")
+    else:
         session.delete(comment)
         session.commit()
 

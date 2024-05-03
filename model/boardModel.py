@@ -66,6 +66,7 @@ class BoardIdInfoParam(BaseModel):
 class BoardSelectParam(BaseModel):
     skip: int = 0
     limit: int = 10
+    teamId: int
     userId: int
 
 
