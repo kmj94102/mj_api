@@ -11,11 +11,9 @@ from sqlalchemy import func
 router = APIRouter()
 
 
-@router.post("/insert")
+@router.post("/insert", summary="가계부 등록")
 async def insert_account_book(item: AccountBookInsertItem):
     """
-    가계부 등록
-
     param
     - **date**: 사용일
     - **dateOfWeek**: 사용 요일
@@ -83,7 +81,7 @@ async def select_account_book_this_month(config: DateConfiguration):
     }
 
 
-@router.post("/select/summaryThisMonth")
+@router.post("/select/summaryThisMonth", summary="이번달 내역 조회")
 async def select_account_summary_this_month(config: DateConfiguration):
     income = 0
     expenditure = 0
@@ -105,7 +103,7 @@ async def select_account_summary_this_month(config: DateConfiguration):
     }
 
 
-@router.post("/select/lastMonthAnalysis")
+@router.post("/select/lastMonthAnalysis", summary="지난달 내역 조회")
 async def select_last_month_analysis(config: DateConfiguration):
     session.commit()
 
@@ -188,7 +186,7 @@ def calculate_last_month(config: DateConfiguration):
     return lastMonth
 
 
-@router.post("/select/thisYearSummary")
+@router.post("/select/thisYearSummary", summary="올해 내역 조회")
 async def select_this_year_summary(config: DateConfiguration):
     date_ranges = []
     currentDate = config.date
@@ -197,25 +195,24 @@ async def select_this_year_summary(config: DateConfiguration):
         new_date = datetime(currentDate.year, month, config.baseDate)
         start_date = calculate_start_date(new_date, config.baseDate)
         end_date = calculate_end_date(new_date, config.baseDate)
-        info = session.query(
+        item = session.query(
             func.sum(AccountBook.amount).label("amount")
         ).filter(
             AccountBook.date >= start_date,
             AccountBook.date <= end_date
         ).first()
 
-        if info["amount"] is None:
-            sum = 0
+        if item["amount"] is None:
+            info = 0
         else:
-            sum = info["amount"]
+            info = item["amount"]
 
         date_ranges.append({"month": end_date.month, "startDate": start_date.strftime("%Y.%m.%d"),
-                            "endDate": end_date.strftime("%Y.%m.%d"), "info": sum})
-        date = start_date
+                            "endDate": end_date.strftime("%Y.%m.%d"), "info": info})
     return date_ranges
 
 
-@router.post("/select/info")
+@router.post("/select/info", summary="가계부 전체 조회")
 async def select_account_book(config: DateConfiguration):
     this_month = await select_account_summary_this_month(config)
     last_month = await select_last_month_analysis(config)
@@ -227,7 +224,7 @@ async def select_account_book(config: DateConfiguration):
     }
 
 
-@router.post("/select/thisMonthDetail")
+@router.post("/select/thisMonthDetail", summary="이번달 내역 상세 조회")
 async def select_account_this_month_detail(config: DateConfiguration):
     income = 0
     expenditure = 0
@@ -246,6 +243,7 @@ async def select_account_this_month_detail(config: DateConfiguration):
     return month_info
 
 
+# 미사용
 @router.post("/insert/frequently")
 async def insert_frequently_account_book(item: FrequentlyAccountBookItem):
     data = session.query(FrequentlyAccountBook).filter(FrequentlyAccountBook.whereToUse == item.whereToUse,
@@ -259,7 +257,7 @@ async def insert_frequently_account_book(item: FrequentlyAccountBookItem):
     return f"{item.whereToUse} 추가 완료"
 
 
-@router.post("/insert/fixed")
+@router.post("/insert/fixed", summary="고정 내역 추가")
 async def insert_fixed_account_book(item: FixedAccountBookItem):
     data = session.query(FixedAccountBook).filter(FixedAccountBook.whereToUse == item.whereToUse,
                                                   FixedAccountBook.amount == item.amount).first()
@@ -272,25 +270,25 @@ async def insert_fixed_account_book(item: FixedAccountBookItem):
     return f"{item.whereToUse} 추가 완료"
 
 
-@router.delete("/delete/fixed")
-async def delete_fixed_account_book(id: int):
-    fixed = session.query(FixedAccountBook).filter(FixedAccountBook.id == id).first()
+@router.delete("/delete/fixed", summary="고정 내역 삭제")
+async def delete_fixed_account_book(id_: int):
+    fixed = session.query(FixedAccountBook).filter(FixedAccountBook.id == id_).first()
 
     if not fixed:
         raise HTTPException(status_code=404, detail="존재하지 않는 id입니다.")
 
-    session.query(FixedAccountBook).filter(FixedAccountBook.id == id).delete(synchronize_session=False)
+    session.query(FixedAccountBook).filter(FixedAccountBook.id == id_).delete(synchronize_session=False)
     session.commit()
 
 
-@router.post("/select/fixed")
+@router.post("/select/fixed", summary="고정 내역 조회")
 async def select_fixed_account_book():
     return session.query(FixedAccountBook).all()
 
 
-@router.delete("/delete/frequently")
-async def delete_frequently_account_book(id: int):
-    frequently = session.query(FrequentlyAccountBook).filter(FrequentlyAccountBook.id == id).first()
+@router.delete("/delete/frequently", summary="즐겨찾기 삭제")
+async def delete_frequently_account_book(id_: int):
+    frequently = session.query(FrequentlyAccountBook).filter(FrequentlyAccountBook.id == id_).first()
 
     if not frequently:
         raise HTTPException(status_code=404, detail="존재하지 않는 id입니다.")
@@ -299,6 +297,6 @@ async def delete_frequently_account_book(id: int):
     session.commit()
 
 
-@router.post("/select/frequently")
+@router.post("/select/frequently", summary="즐겨찾기 조회")
 async def select_frequently_account_book():
     return session.query(FrequentlyAccountBook).all()
