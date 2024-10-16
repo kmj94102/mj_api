@@ -5,10 +5,9 @@ from model.adProfitModel import *
 router = APIRouter()
 
 
-@router.post("/insert/tokenInfo", summary="게시글 등록")
-async def insert_board(item: AdProfit) -> str:
-    print(f"\n\n\n+++++ {item}\n\n\n")
-    adProfit = item.toTable()
+@router.get("/insert/tokenInfo", summary="게시글 등록")
+async def insert_board(email: str, refreshToken: str, accessToken: str, device: str) -> str:
+    adProfit = AdProfit(email=email, refreshToken=refreshToken, accessToken=accessToken, device=device).toTable()
     session.add(adProfit)
     session.commit()
 
