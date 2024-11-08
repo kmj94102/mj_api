@@ -4,7 +4,7 @@ from starlette.middleware.cors import CORSMiddleware
 from model.model import HomeParam
 
 from pydantic import BaseSettings
-from api import pokemon, calendar, elsword, accountBook, vocabulary, user, web, purchase, chatting, board, adProfit
+from api import pokemon, calendar, elsword, accountBook, vocabulary, user, web, purchase, chatting, board, adProfit, generationDex
 from api.calendar import read_calendar_week
 from api.elsword import read_elsword_quest_progress
 from fastapi.responses import HTMLResponse
@@ -28,6 +28,7 @@ app.add_middleware(
 settings = Settings()
 
 app.include_router(pokemon.router, prefix="/pokemon", tags=["pokemon"])
+app.include_router(generationDex.router, prefix="/dex", tags=["dex"])
 app.include_router(calendar.router, prefix="/calendar", tags=["calendar"])
 app.include_router(elsword.router, prefix="/elsword", tags=["elsword"])
 app.include_router(accountBook.router, prefix="/accountBook", tags=["accountBook"])
