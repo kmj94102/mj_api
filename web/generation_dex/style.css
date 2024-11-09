@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css?family=Poppins:200,300,400,500,600,700,800,900&display=swap');
+*
+{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+body
+{
+    font-family: Arial, sans-serif;
+    align-items: center;
+    min-height: 100vh;
+    background: #17181D;
+    margin: 0 50px;
+    color: white;
+    display: flex;
+}
+#section
+{
+    margin: 0 auto;
+}
+
+#generation
+{
+}
+input[type="radio"]
+{
+    display: none;
+}
+label
+{
+    padding: 10px 20px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    display: inline-block;
+    margin: 5px;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+input[type="radio"]:checked + label
+{
+    background-color: #82E3D2; /* 선택된 배경 색상 */
+    color: white; /* 선택된 글자 색상 */
+    border-color: #82E3D2;
+}
+
+#search
+{
+    display: flex;
+    margin-top: 30px;
+}
+input[type="text"]
+{
+    background-color: #00000000;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px 10px;
+    color: white;
+}
+#search_button
+{
+    padding: 5px 10px;
+    background-color: #82E3D2;
+    border-color: #82E3D2;
+    border-radius: 5px;
+    margin-left:10px;
+}
+
+#search_result
+{
+    margin-top: 30px;
+}
+#search_result img
+{
+    width:100px;
+    height: 100px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-right:10px;
+}
+
+#select
+{
+    display: flex;
+}
+.btn
+{
+    align-self: center;
+    background-color: #82E3D2;
+    border-color: #82E3D2;
+    border-radius: 30px;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    font-size: 20px;
+}
+#select_img
+{
+    margin: 0 10px;
+}
+
+#submit
+{
+    background-color: #82E3D2;
+    border-color: #82E3D2;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 20px;
+    padding: 5px 10px;
+    margin-top: 30px;
+}

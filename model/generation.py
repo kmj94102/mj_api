@@ -5,7 +5,7 @@ from db import Base
 
 class GenerationTable(Base):
     __tablename__ = 'generation'
-    idx = Column(Integer, primary_key=True, autoincrement=True)
+    idx = Column(Integer, primary_key=True)
     code = Column(Integer)
     name = Column(String(100))
 

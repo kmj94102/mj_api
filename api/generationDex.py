@@ -16,7 +16,7 @@ async def read_generation():
     return quest
 
 
-@router.get("/insert/dex")
+@router.get("/insert")
 async def insert_dex(pokemonIdx: int, generationIdx: int, name: str):
     result = session.query(GenerationDexTable).where(GenerationDexTable.pokemonIdx == pokemonIdx,
                                                      generationIdx == GenerationDexTable.generationIdx).first()

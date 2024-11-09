@@ -60,6 +60,13 @@ async function fetchSearchPokemon(number) {
     selectName = data.name;
 }
 
+async function sendData() {
+    const selectedRadio = document.querySelector('input[name="generations"]:checked');
+    const response = await fetch(`https://port-0-mj-api-e9btb72blgnd5rgr.sel3.cloudtype.app/dex/insert?pokemonIdx=${selectIndex}&generationIdx=${selectedRadio.value}&name=${selectName}`);
+    const data = await response.json();
+    alert(data);
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     const search_button = document.getElementById("search_button");
     search_button.addEventListener("click", fetchSearchPokemonList);
@@ -83,4 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
             fetchSearchPokemon(newStrNum)
         }
     });
+
+    const submit = document.getElementById("submit");
+    submit.addEventListener("click", sendData);
 });
