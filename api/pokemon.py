@@ -238,7 +238,7 @@ async def insert_pokemon_evolution_types(list: List[EvolutionType]):
 
 
 @router.post("/select/beforeImageInfo")
-async def read_pokemon_before_imgae_info():
+async def read_pokemon_before_image_info():
     session.commit()
     return session.query(PokemonTable.number, PokemonTable.spotlight).all()
 

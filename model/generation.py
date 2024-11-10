@@ -36,3 +36,7 @@ def createDexTable(item: GenerationDex) -> GenerationDexTable:
     dex.isCatch = item.isCatch
 
     return dex
+
+
+class IdxParam(BaseModel):
+    idx: int = None
