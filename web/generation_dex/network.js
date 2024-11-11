@@ -33,6 +33,8 @@ async function fetchSearchPokemonList() {
     const data = await response.json();
 
     const searchResult = document.getElementById('search_result');
+    searchResult.replaceChildren();
+
     data.list.forEach((item, index) => {
         const img = document.createElement('img');
         img.src = item.spotlight;
