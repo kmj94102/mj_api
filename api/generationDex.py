@@ -75,7 +75,7 @@ async def read_generation_list(generationIdx: int):
     session.commit()
 
     result = session\
-        .query(PokemonTable.name, GenerationDexTable.idx, GenerationDexTable.generationIdx, GenerationDexTable.isCatch, PokemonTable.spotlight)\
+        .query(PokemonTable.name, PokemonTable.number, GenerationDexTable.idx, GenerationDexTable.generationIdx, GenerationDexTable.isCatch, PokemonTable.spotlight)\
         .filter(GenerationDexTable.generationIdx == generationIdx)\
         .join(PokemonTable, GenerationDexTable.pokemonIdx == PokemonTable.index)\
         .all()
