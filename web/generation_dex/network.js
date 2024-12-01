@@ -95,4 +95,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const submit = document.getElementById("submit");
     submit.addEventListener("click", sendData);
+
+    const inputBox = document.getElementById('search_input');
+
+    inputBox.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            fetchSearchPokemonList();
+        }
+    });
 });
