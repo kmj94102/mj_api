@@ -58,7 +58,7 @@ async def read_calendar_week(start: str, end: str):
 
     result = []
 
-    while current_date < end_date:
+    while current_date <= end_date:
         day_data = await read_calendar(current_date)
         if day_data:
             result.append(day_data)
