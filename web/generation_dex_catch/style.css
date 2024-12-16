@@ -98,6 +98,10 @@ input[type="radio"]:checked + label
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     z-index: 1000;
+    min-width: 220px;
+    max-height: 450px;
+    overflow: hidden;
+    overflow-y: auto;
 }
 
 #dialog-overlay {
@@ -137,6 +141,7 @@ input[type="radio"]:checked + label
     display: flex;
     flex-decoration: row;
     align-items: center;
+    justify-content: center;
 }
 
 .evolution_image {
