@@ -1,67 +1,70 @@
 <!DOCTYPE html>
-    <head>
-        <meta charset="UTF-8">
-        <link rel="stylesheet" href="style.css"/>
-        <script src="network.js"></script>
-    </head>
-    <body>
-        <div class="box">
-            <span class="borderLine"></span>
-            <div class="form">
-                <h2>단어 그룹</h2>
-                <div class="inputBox">
-                    <input type="text" required="required" id="day">
-                    <span>날짜</span>
-                    <i></i>
-                </div>
-                <div class="inputBox">
-                    <input type="text" required="required" id="group">
-                    <span>단어 그룹 이름</span>
-                    <i></i>
-                </div>
-                <div class="inputBox">
-                    <input type="text" required="required" id="modify">
-                    <span>변형</span>
-                    <i></i>
-                </div>
-                <div class="inputBox">
-                    <input type="text" required="required" id="groupMeaning">
-                    <span>뜻</span>
-                    <i></i>
-                </div>
-
-                <input type="submit" value="단어 그룹 등록" id="submitGroup">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css"/>
+    <script src="network.js"></script>
+</head>
+<body>
+<div id="header">
+    <span id="logo">MJ 단어장</span>
+    <div id="newVocabulary">
+        <img src="ic_plus.svg">
+        <span>새 단어장 만들기</span>
+    </div>
+</div>
+<div class="divider"></div>
+<div id="title">
+    <span id="date">2024.01</span>
+    <div>
+        <input type="radio" name="language" id="all" checked>
+        <label for="all">전체</label>
+        <input type="radio" name="language" id="english">
+        <label for="english">영어</label>
+        <input type="radio" name="language" id="japanese">
+        <label for="japanese">일본어</label>
+    </div>
+</div>
+<div id="noteList">
+    <div class="note">
+        <div>
+            <span class="noteTitle">24.03.14</span>
+            <div>
+                <span class="tag">일본어</span>
+                <span class="noteName">회화</span>
             </div>
         </div>
-        <span class="spacer"></span>
-        <div class="box">
-            <span class="borderLine"></span>
-            <div class="form">
-                <h2>영단어</h2>
-                <div class="inputBox">
-                    <input type="text" required="required" id="word">
-                    <span>단어</span>
-                    <i></i>
-                </div>
-                <div class="inputBox">
-                    <input type="text" required="required" id="wordMeaning">
-                    <span>뜻</span>
-                    <i></i>
-                </div>
-                <div class="inputBox">
-                    <input type="text" required="required" id="hint">
-                    <span>힌트</span>
-                    <i></i>
-                </div>
-                <div class="inputBox">
-                    <input type="text" required="required" id="additional">
-                    <span>추가</span>
-                    <i></i>
-                </div>
-
-                <input type="submit" value="영단어 등록" id="submitWord">
+        <img src="ic_next.svg">
+    </div>
+    <div class="note">
+        <div>
+            <span class="noteTitle">24.03.14</span>
+            <div>
+                <span class="tag">일본어</span>
+                <span class="noteName">회화</span>
             </div>
         </div>
-        <div id="toast"></div>
-    </body>
+        <img src="ic_next.svg">
+    </div>
+    <div class="note">
+        <div>
+            <span class="noteTitle">24.03.14</span>
+            <div>
+                <span class="tag">일본어</span>
+                <span class="noteName">회화</span>
+            </div>
+        </div>
+        <img src="ic_next.svg">
+    </div>
+    <div class="note">
+        <div>
+            <span class="noteTitle">24.03.14</span>
+            <div>
+                <span class="tag">일본어</span>
+                <span class="noteName">회화</span>
+            </div>
+        </div>
+        <img src="ic_next.svg">
+    </div>
+</div>
+</body>
 </html>
