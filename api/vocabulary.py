@@ -1,145 +1,90 @@
 from fastapi import APIRouter
-from db import session
-from model.model import VocabularyTable, Vocabulary, create_vocabulary, \
-    WordGroupTable, WordGroup, create_word_group, DayParam, \
-    ExaminationScoring, \
-    WrongAnswerTable, create_wrong_answer
-from typing import List
+from sqlalchemy.exc import SQLAlchemyError
 
-from sqlalchemy.sql import func
+from db import session
+from model.common import raise_http_exception
+from model.vocabularyModel import *
+from typing import List
 
 router = APIRouter()
 
 
-@router.post("/insert")
-async def insert_vocabulary(item: Vocabulary):
+@router.post("/insert/note")
+async def insert_vocabulary_note(item: VocabularyNote):
+    print(f"\n\n\n+++++ {item}\n\n\n")
+    """
+    단어장 등록
+    - **title**: 타이틀
+    - **language**: 언어
+    - **timestamp**: 날짜
+    """
+    data = session.query(VocabularyNoteTable).\
+        filter(VocabularyNoteTable.timestamp == item.timestamp,
+               VocabularyNoteTable.language == item.language).first()
+
+    if data is None:
+        vocabulary = create_vocabulary_note_table(item)
+        session.add(vocabulary)
+        session.commit()
+        return f"{item.title} 추가 완료"
+    else:
+        return "이미 등록된 노트가 있습니다."
+
+
+@router.post("/insert/word")
+async def insert_word(item: Word):
     print(f"\n\n\n+++++ {item}\n\n\n")
     """
     단어 등록
-    - **day**: 날짜
-    - **group**: 그룹
+    - **noteId**: 노트 아이디
     - **word**: 단어
     - **meaning**: 뜻
-    - **hint**: 힌트
-    - **additional**: 추가
+    - **note1**: 비고1
+    - **note2**: 비고2
     """
-    data = session.query(VocabularyTable).filter(VocabularyTable.word == item.word).first()
+    data = session.query(WordTable).filter(WordTable.word == item.word).first()
 
-    if data is None:
-        vocabulary = create_vocabulary(item)
-        session.add(vocabulary)
-        session.commit()
-        return f"{item.word} 추가 완료"
-    else:
-        return f"{item.word}는 중복된 단어입니다."
+    try:
+        session.rollback()
+        session.begin()
 
+        if data is None:
+            word = create_word_table(item)
+            session.add(word)
+            session.flush()
+            session.commit()
 
-@router.post("/select")
-async def select_vocabulary(item: DayParam):
-    session.commit()
-    wordGroupList = session.query(WordGroupTable).filter(WordGroupTable.day == item.day).all()
-
-    result_data = {"result": []}
-
-    for word in wordGroupList:
-        wordInfo = {
-            "wordGroup": {
-                "modify": word.modify,
-                "day": word.day,
-                "name": word.name,
-                "meaning": word.meaning,
-                "id": word.id
-            },
-            "list": []
-        }
-
-        vocabularyList = session.query(VocabularyTable).filter(VocabularyTable.group == word.name,
-                                                               VocabularyTable.day == word.day).all()
-        for vocabulary in vocabularyList:
-            vocabularyInfo = {
-                "meaning": vocabulary.meaning,
-                "day": vocabulary.day,
-                "group": vocabulary.group,
-                "hint": vocabulary.hint,
-                "id": vocabulary.id,
-                "word": vocabulary.word,
-                "additional": vocabulary.additional
-            }
-
-            wordInfo["list"].append(vocabularyInfo)
-
-        result_data["result"].append(wordInfo)
-
-    return result_data
+            return word.wordId
+        else:
+            session.rollback()
+            raise_http_exception(f'${item.word}는 이미 등록되었습니다')
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise_http_exception(f"오류가 발생하였습니다. {e}")
+    finally:
+        session.close()
 
 
-@router.post("/select/examination")
-async def select_examination(item: DayParam):
-    random_order = func.random()
-    return session.query(VocabularyTable.id, VocabularyTable.word).filter(VocabularyTable.day == item.day) \
-        .order_by(random_order).all()
-
-
-@router.post("/select/examination/scoring")
-async def select_examination_scoring(items: List[ExaminationScoring]):
-    correctCount = 0
-
-    vocabulary_ids = [item.id for item in items]
-    vocabularies = session.query(VocabularyTable).filter(VocabularyTable.id.in_(vocabulary_ids)).all()
-
-    for item in items:
-        vocabulary = next((v for v in vocabularies if v.id == item.id), None)
-        if vocabulary:
-            myMeaning = item.meaning.replace(" ", "")
-            vocabularyMeaning = vocabulary.meaning.replace(" ", "")
-
-            if myMeaning != "" and myMeaning in vocabularyMeaning:
-                correctCount += 1
+@router.post("/insert/word/example")
+async def insert_word_example(_list: List[WordExample]):
+    """
+    단어 예시 등록
+    - **wordId**: 단어 아이디
+    - **example**: 예시 문장
+    - **meaning**: 예시 문장 뜻
+    - **hint**: 예시 문장 힌트
+    - **isCheck**: 체크 여부
+    """
+    try:
+        for item in _list:
+            data = session.query(WordExampleTable)\
+                .filter(WordExampleTable.example == item.example).first()
+            if data is None:
+                wordExample = create_word_example_table(item)
+                session.add(wordExample)
             else:
-                await insert_wrong_answer(vocabulary)
-
-    return {
-        "totalSize": len(items),
-        "correctCount": correctCount,
-    }
-
-
-@router.post("/group/insert")
-async def insert_word_group(item: WordGroup):
-    """
-    단어 등록
-    - **day**: 날짜
-    - **name**: 이름
-    - **meaning**: 뜻
-    - **modify**: 변형
-    """
-
-    data = session.query(WordGroupTable).filter(WordGroupTable.name == item.name).first()
-
-    if data is None:
-        vocabulary = create_word_group(item)
-        session.add(vocabulary)
+                session.rollback()
+                raise_http_exception('중복으로 등록된 아이템이 있습니다.')
         session.commit()
-        return f"{item.name} 추가 완료"
-    else:
-        return f"{item.name}는 중복된 그룹입니다."
-
-
-@router.post("/select/wrongAnswer")
-async def select_wrong_answer(item: DayParam):
-    return session.query(WrongAnswerTable).filter(WrongAnswerTable.day == item.day).all()
-
-
-@router.post("/insert/wrongAnswer")
-async def insert_wrong_answer(item: Vocabulary):
-    data = session.query(WrongAnswerTable).filter(WrongAnswerTable.word == item.word).first()
-    wrongAnswer = create_wrong_answer(item)
-
-    if data is None:
-        session.add(wrongAnswer)
-        session.commit()
-        return f"{item.word} 추가 완료"
-    else:
-        data.count += 1
-        session.commit()
-        return f"{item.word}는 이미 등록된 단어로 카운트를 증가합니다."
+    finally:
+        session.close()
