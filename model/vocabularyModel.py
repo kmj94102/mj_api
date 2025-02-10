@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, DateTime, String, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, DateTime, String, Boolean, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from pydantic import BaseModel
@@ -10,89 +10,78 @@ Base = declarative_base()
 
 class VocabularyNoteTable(Base):
     __tablename__ = 'vocabulary_note'
-    noteId = Column(Integer, primary_key=True)
-    title = Column(String)
-    language = Column(String)
+    noteId = Column(Integer, primary_key=True, autoincrement=True)
+    title = Column(String(100))
+    language = Column(String(100))
     timestamp = Column(DateTime)
 
 
 class VocabularyNote(BaseModel):
-    noteId: int = 0
     title: str = None
     language: str = None
     timestamp: datetime = None
 
-
-def create_vocabulary_note_table(item: VocabularyNote) -> VocabularyNoteTable:
-    result = VocabularyNoteTable()
-    result.noteId = item.noteId
-    result.title = item.title
-    result.timestamp = item.timestamp
-
-    return result
+    def toTable(self) -> VocabularyNoteTable:
+        return VocabularyNoteTable(
+            title=self.title,
+            language=self.language,
+            timestamp=self.timestamp
+        )
 
 
 class WordTable(Base):
     __tablename__ = 'word'
-    wordId = Column(Integer, primary_key=True)
+    wordId = Column(Integer, primary_key=True, autoincrement=True)
     noteId = Column(Integer, ForeignKey('vocabulary_note.noteId'))
-    word = Column(String)
-    meaning = Column(String)
-    note1 = Column(String)
-    note2 = Column(String)
+    word = Column(Text)
+    meaning = Column(Text)
+    note1 = Column(Text)
+    note2 = Column(Text)
 
-    note = relationship("vocabulary_note", foreign_keys=[noteId])
+    note = relationship("VocabularyNoteTable", foreign_keys=[noteId])
 
 
 class Word(BaseModel):
-    wordId: int = 0
     noteId: int = 0
     word: str = None
     meaning: str = None
     note1: str = None
     note2: str = None
 
-
-def create_word_table(item: Word) -> WordTable:
-    result = WordTable()
-    result.noteId = item.wordId
-    result.noteId = item.noteId
-    result.word = item.word
-    result.meaning = item.meaning
-    result.note1 = item.note1
-    result.note2 = item.note2
-
-    return result
+    def toTable(self) -> WordTable:
+        return WordTable(
+            noteId=self.noteId,
+            word=self.word,
+            meaning=self.meaning,
+            note1=self.note1,
+            note2=self.note2
+        )
 
 
 class WordExampleTable(Base):
     __tablename__ = 'word_example'
-    wordExampleId = Column(Integer, primary_key=True)
+    wordExampleId = Column(Integer, primary_key=True, autoincrement=True)
     wordId = Column(Integer, ForeignKey('word.wordId'))
-    example = Column(String)
-    meaning = Column(String)
-    hint = Column(String)
+    example = Column(Text)
+    meaning = Column(Text)
+    hint = Column(Text)
     isCheck = Column(Boolean)
 
-    word = relationship("word", foreign_keys=[wordExampleId])
+    word = relationship("WordTable", foreign_keys=[wordId])
 
 
 class WordExample(BaseModel):
-    wordExampleId: int = 0
     wordId: int = 0
     example: str = None
     meaning: str = None
     hint: str = None
     isCheck: bool = False
 
-
-def create_word_example_table(item: WordExample) -> WordExampleTable:
-    result = WordExampleTable()
-    result.wordExampleId = item.wordExampleId
-    result.wordId = item.wordId
-    result.example = item.example
-    result.meaning = item.meaning
-    result.hint = item.hint
-    result.isCheck = item.isCheck
-
-    return result
+    def toTable(self) -> WordExampleTable:
+        return WordExampleTable(
+            wordId=self.wordId,
+            example=self.example,
+            meaning=self.meaning,
+            hint=self.hint,
+            isCheck=self.isCheck,
+        )

@@ -23,7 +23,7 @@ async def insert_vocabulary_note(item: VocabularyNote):
                VocabularyNoteTable.language == item.language).first()
 
     if data is None:
-        vocabulary = create_vocabulary_note_table(item)
+        vocabulary = item.toTable()
         session.add(vocabulary)
         session.commit()
         return f"{item.title} 추가 완료"
@@ -49,7 +49,7 @@ async def insert_word(item: Word):
         session.begin()
 
         if data is None:
-            word = create_word_table(item)
+            word = item.toTable()
             session.add(word)
             session.flush()
             session.commit()
@@ -80,7 +80,7 @@ async def insert_word_example(_list: List[WordExample]):
             data = session.query(WordExampleTable)\
                 .filter(WordExampleTable.example == item.example).first()
             if data is None:
-                wordExample = create_word_example_table(item)
+                wordExample = item.toTable()
                 session.add(wordExample)
             else:
                 session.rollback()
