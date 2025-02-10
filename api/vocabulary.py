@@ -88,3 +88,40 @@ async def insert_word_example(_list: List[WordExample]):
         session.commit()
     finally:
         session.close()
+
+
+@router.post("/select/note")
+async def select_vocabulary_note(item: NoteSelectParam):
+    """
+    단어장 조회
+    """
+    start_date = datetime(item.year, item.month, 1)
+    if item.month == 12:
+        end_date = datetime(item.year + 1, 1, 1)
+    else:
+        end_date = datetime(item.year, item.month + 1, 1)
+
+    return session.query(VocabularyNoteTable). \
+        filter(VocabularyNoteTable.timestamp >= start_date). \
+        filter(VocabularyNoteTable.timestamp < end_date). \
+        all()
+
+
+@router.post("/select/word")
+async def select_vocabulary_note(item: WordSelectParam):
+    """
+    단어장 상세 조회
+    """
+
+    _list = session.query(WordTable).filter(WordTable.noteId == item.noteId).all()
+    return [
+        {
+            "noteId": item.noteId,
+            "word": item.word,
+            "meaning": item.meaning,
+            "note1": item.note1,
+            "note2": item.note2,
+            "examples": session.query(WordExampleTable).filter(WordExampleTable.wordId == item.wordId).all()
+        }
+        for item in _list
+    ]

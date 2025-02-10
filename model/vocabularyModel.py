@@ -85,3 +85,12 @@ class WordExample(BaseModel):
             hint=self.hint,
             isCheck=self.isCheck,
         )
+
+
+class NoteSelectParam(BaseModel):
+    year: int = None
+    month: int = None
+
+
+class WordSelectParam(BaseModel):
+    noteId: int = None
