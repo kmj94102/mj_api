@@ -120,4 +120,5 @@ input[type="radio"]:checked + label
 {
     font-size: 14px;
     color: #fafafa;
+    margin-left: 4px;
 }
