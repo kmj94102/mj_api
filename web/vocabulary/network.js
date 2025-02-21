@@ -78,6 +78,11 @@ function drawNoteList(list) {
         note.appendChild(noteContents);
         note.appendChild(image);
 
+        note.addEventListener("click", function(event){
+            const value = item.noteId;
+            window.location.href = `note/index.html?noteId=${encodeURIComponent(value)}`;
+        });
+
         noteList.appendChild(note);
     });
 }

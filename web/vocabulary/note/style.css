@@ -52,6 +52,20 @@ body
     width: 100%;
 }
 
+#newWord
+{
+    display: flex;
+    align-items: center;
+    border: 1px solid #fafafa;
+    border-radius: 5px;
+    padding: 9px;
+}
+#newWord span
+{
+    margin-left: 5px;
+    color: #fafafa;
+}
+
 .word
 {
     border: 1px solid white;
