@@ -1,13 +1,15 @@
 document.addEventListener("DOMContentLoaded", function() {
     const newVocabulary = document.getElementById("newVocabulary");
 
-    newWord.addEventListener("click", function(event){
-        window.location.href = '../addWord/index.html';
-    });
-
     const params = new URLSearchParams(window.location.search);
     const noteId = params.get("noteId");
     fetchNoteList(noteId);
+
+    newWord.addEventListener("click", function(event){
+        if(noteId) {
+            window.location.href = `../addWord/index.html?noteId=${encodeURIComponent(noteId)}`;
+        }
+    });
 });
 
 function fetchNoteList(noteId) {
@@ -55,10 +57,10 @@ function drawWordList(list) {
         item.examples.forEach(example => {
             const exampleOriginal = document.createElement('div')
             exampleOriginal.className = 'exampleOriginal';
-            exampleOriginal.textContent = item.example;
+            exampleOriginal.textContent = example.example;
 
             const exampleMeaning = document.createElement('div')
-            exampleMeaning.textContent = item.meaning
+            exampleMeaning.textContent = example.meaning
 
             examples.appendChild(exampleOriginal);
             examples.appendChild(exampleMeaning);
