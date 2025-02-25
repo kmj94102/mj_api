@@ -74,9 +74,13 @@ input[type="radio"]:checked + label
 }
 #date
 {
+    width: 190px;
     font-size: 24px;
     font-weight: bold;
     color: #fafafa;
+    background: #23242a;
+    border: 0px;
+    color-scheme: dark;
 }
 #noteList
 {

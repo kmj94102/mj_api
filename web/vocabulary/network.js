@@ -7,8 +7,16 @@ document.addEventListener("DOMContentLoaded", function() {
     month = today.getMonth() + 1;
 
     const newVocabulary = document.getElementById("newVocabulary");
-    document.getElementById("date").textContent = `${year}.${month.toString().padStart(2, '0')}`;
+    document.getElementById("date").value = `${year}-${String(month).padStart(2, '0')}`;
     fetchNotes();
+
+    document.getElementById("date").addEventListener("change", function() {
+        const [newYear, newMonth] = this.value.split("-");
+        console.log(`${newYear}.${newMonth}`);
+        year = newYear;
+        month = newMonth;
+        fetchNotes();
+    });
 
     newVocabulary.addEventListener("click", function(event){
         window.location.href = 'addNote/index.html';
@@ -41,6 +49,7 @@ async function fetchNotes() {
 
 function drawNoteList(list) {
     const noteList = document.getElementById("noteList");
+    noteList.replaceChildren();
 
     list.forEach(item => {
         console.log('draw', item.title);
