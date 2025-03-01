@@ -21,12 +21,20 @@ document.addEventListener("DOMContentLoaded", function() {
     newVocabulary.addEventListener("click", function(event){
         window.location.href = 'addNote/index.html';
     });
+
+    document.querySelectorAll('input[name="language"]').forEach(radio => {
+        radio.addEventListener("change", function() {
+            fetchNotes();
+        });
+    });
 });
 
 async function fetchNotes() {
+    const language = document.querySelector('input[name="language"]:checked')?.value;
     const dataToSend = {
         year: year,
-        month: month
+        month: month,
+        language: language
     };
     fetch('https://port-0-mj-api-e9btb72blgnd5rgr.sel3.cloudtype.app/vocabulary/select/note', {
         method: 'POST',
@@ -68,7 +76,7 @@ function drawNoteList(list) {
 
         const noteSubContents = document.createElement('div');
         const tag = document.createElement('span');
-        tag.className = 'tag';
+        tag.className = `tag ${item.language}`;
         tag.textContent = item.language == 'us' ? '영어' : '일본어';
 
         const noteName = document.createElement('span');

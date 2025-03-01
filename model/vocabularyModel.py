@@ -90,6 +90,7 @@ class WordExample(BaseModel):
 class NoteSelectParam(BaseModel):
     year: int = None
     month: int = None
+    language: str = None
 
 
 class WordSelectParam(BaseModel):

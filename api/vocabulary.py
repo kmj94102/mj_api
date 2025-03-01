@@ -15,7 +15,7 @@ async def insert_vocabulary_note(item: VocabularyNote):
     """
     단어장 등록
     - **title**: 타이틀
-    - **language**: 언어
+    - **language**: 언어 (us/jp)
     - **timestamp**: 날짜
     """
     data = session.query(VocabularyNoteTable).\
@@ -94,6 +94,9 @@ async def insert_word_example(_list: List[WordExample]):
 async def select_vocabulary_note(item: NoteSelectParam):
     """
     단어장 조회
+    - **year**: 년도
+    - **month**: 월
+    - **language**: all/us/jp
     """
     start_date = datetime(item.year, item.month, 1)
     if item.month == 12:
@@ -101,10 +104,17 @@ async def select_vocabulary_note(item: NoteSelectParam):
     else:
         end_date = datetime(item.year, item.month + 1, 1)
 
-    return session.query(VocabularyNoteTable). \
-        filter(VocabularyNoteTable.timestamp >= start_date). \
-        filter(VocabularyNoteTable.timestamp < end_date). \
-        all()
+    if item.language == 'all':
+        return session.query(VocabularyNoteTable). \
+            filter(VocabularyNoteTable.timestamp >= start_date). \
+            filter(VocabularyNoteTable.timestamp < end_date). \
+            all()
+    else:
+        return session.query(VocabularyNoteTable). \
+            filter(VocabularyNoteTable.timestamp >= start_date). \
+            filter(VocabularyNoteTable.timestamp < end_date). \
+            filter(VocabularyNoteTable.language == item.language).\
+            all()
 
 
 @router.post("/select/word")
