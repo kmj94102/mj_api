@@ -93,6 +93,12 @@ body
     margin-top: 10px;
     margin-bottom: 10px;
 }
+.exampleContainer
+{
+    display: flex;
+    justify-content: space-between;
+    margin-right: 20px;
+}
 .exampleOriginal
 {
     margin-top: 12px;

@@ -55,14 +55,25 @@ function drawWordList(list) {
         examples.className = 'example';
 
         item.examples.forEach(example => {
-            const exampleOriginal = document.createElement('div')
+            const exampleContainer = document.createElement('div');
+            exampleContainer.className = 'exampleCo정ntainer';
+
+            const exampleOriginal = document.createElement('div');
             exampleOriginal.className = 'exampleOriginal';
             exampleOriginal.textContent = example.example;
 
-            const exampleMeaning = document.createElement('div')
-            exampleMeaning.textContent = example.meaning
+            const exampleMeaning = document.createElement('div');
+            exampleMeaning.textContent = example.meaning;
 
-            examples.appendChild(exampleOriginal);
+            const copy = document.createElement("img");
+            copy.src = "ic_copy.svg";
+            copy.addEventListener("click", function() {
+                copyToClipboard(example.example);
+            });
+
+            exampleContainer.appendChild(exampleOriginal);
+            exampleContainer.appendChild(copy);
+            examples.appendChild(exampleContainer);
             examples.appendChild(exampleMeaning);
         });
 
@@ -89,6 +100,7 @@ function drawWordList(list) {
         if (item.note1 && item.note1.trim() !== "") {
             word.appendChild(divider2);
             word.appendChild(note1);
+            divider3.style.marginTop = "10px";
         }
         if (item.note2 && item.note2.trim() !== "") {
             word.appendChild(divider3);
@@ -97,4 +109,8 @@ function drawWordList(list) {
 
         contents.appendChild(word);
     });
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text)
 }
