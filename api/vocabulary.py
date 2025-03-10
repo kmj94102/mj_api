@@ -6,12 +6,12 @@ from model.common import raise_http_exception
 from model.vocabularyModel import *
 from typing import List
 
+
 router = APIRouter()
 
 
-@router.post("/insert/note")
+@router.post("/insert/note", summary="단어장 등록")
 async def insert_vocabulary_note(item: VocabularyNote):
-    print(f"\n\n\n+++++ {item}\n\n\n")
     """
     단어장 등록
     - **title**: 타이틀
@@ -31,9 +31,8 @@ async def insert_vocabulary_note(item: VocabularyNote):
         return "이미 등록된 노트가 있습니다."
 
 
-@router.post("/insert/word")
+@router.post("/insert/word", summary="단어 등록")
 async def insert_word(item: Word):
-    print(f"\n\n\n+++++ {item}\n\n\n")
     """
     단어 등록
     - **noteId**: 노트 아이디
@@ -65,7 +64,7 @@ async def insert_word(item: Word):
         session.close()
 
 
-@router.post("/insert/word/example")
+@router.post("/insert/word/example", summary="단어 예시 등록")
 async def insert_word_example(_list: List[WordExample]):
     """
     단어 예시 등록
@@ -90,7 +89,7 @@ async def insert_word_example(_list: List[WordExample]):
         session.close()
 
 
-@router.post("/select/note")
+@router.post("/select/note", summary="/select/note")
 async def select_vocabulary_note(item: NoteSelectParam):
     """
     단어장 조회
@@ -117,13 +116,13 @@ async def select_vocabulary_note(item: NoteSelectParam):
             all()
 
 
-@router.post("/select/word")
-async def select_vocabulary_note(item: WordSelectParam):
+@router.post("/select/word", summary="단어장 상세 조회")
+async def select_vocabulary_note(item: IdParam):
     """
     단어장 상세 조회
     """
 
-    _list = session.query(WordTable).filter(WordTable.noteId == item.noteId).all()
+    _list = session.query(WordTable).filter(WordTable.noteId == item.idx).all()
     return [
         {
             "noteId": item.noteId,
@@ -135,3 +134,43 @@ async def select_vocabulary_note(item: WordSelectParam):
         }
         for item in _list
     ]
+
+
+@router.post("/insert/wrongAnswer", summary="오답 등록")
+async def insert_wrong_answer(_list: List[WrongAnswerInsertParam]):
+    """
+    단어 예시 등록
+    - **wordId**: 단어 아이디
+    """
+    try:
+        for item in _list:
+            data = session.query(WrongAnswerTable)\
+                .filter(WrongAnswerTable.wordId == item.wordIdx).first()
+            if data is None:
+                wrongAnswer = create_wrong_answer(item)
+                session.add(wrongAnswer)
+            else:
+                data.count += 1
+                data.timestamp = datetime.now()
+
+        session.commit()
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise_http_exception(f"오류가 발생하였습니다. {e}")
+    finally:
+        session.close()
+
+
+@router.post("/select/wrongAnswer", summary="오답 조회")
+async def select_wrong_answer(param: WrongAnswerSelectParam):
+    session.commit()
+
+    _list = session.query(WrongAnswerTable).filter(WrongAnswerTable.noteId.like(f"%{param.noteIdx}%")) \
+        .order_by(WrongAnswerTable.timestamp).offset(param.skip).limit(param.limit).all()
+
+    count = session.query(WrongAnswerTable).filter(WrongAnswerTable.noteId.like(f"%{param.noteIdx}%")).count()
+
+    return {
+        "list": _list,
+        "count": count
+    }

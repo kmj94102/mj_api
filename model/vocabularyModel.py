@@ -93,5 +93,53 @@ class NoteSelectParam(BaseModel):
     language: str = None
 
 
-class WordSelectParam(BaseModel):
-    noteId: int = None
+class IdParam(BaseModel):
+    idx: int = None
+
+
+class WrongAnswerTable(Base):
+    __tablename__ = 'wrong_answer'
+    idx = Column(Integer, primary_key=True, autoincrement=True)
+    wordId = Column(Integer, ForeignKey('word.wordId'))
+    noteId = Column(Integer, ForeignKey('vocabulary_note.noteId'))
+    count = Column(Integer)
+    timestamp = Column(DateTime)
+
+    word = relationship("WordTable", foreign_keys=[wordId])
+    note = relationship("VocabularyNoteTable", foreign_keys=[noteId])
+
+
+class WrongAnswer(BaseModel):
+    idx: int = 0
+    wordId: int = 0
+    noteId: int = 0
+    count: int = 0
+    timestamp: datetime = None
+
+    def toTable(self) -> WrongAnswerTable:
+        return WrongAnswerTable(
+            idx=self.idx,
+            wordId=self.wordId,
+            count=self.count
+        )
+
+
+class WrongAnswerInsertParam(BaseModel):
+    wordIdx: int = 0
+    noteIdx: int = 0
+
+
+def create_wrong_answer(param: WrongAnswerInsertParam) -> WrongAnswerTable:
+    wrongAnswer = WrongAnswerTable()
+    wrongAnswer.wordId = param.wordIdx
+    wrongAnswer.noteId = param.noteIdx
+    wrongAnswer.count = 1
+    wrongAnswer.timestamp = datetime.now()
+
+    return wrongAnswer
+
+
+class WrongAnswerSelectParam(BaseModel):
+    noteIdx: str = ""
+    limit: int = 100
+    skip: int = 0
