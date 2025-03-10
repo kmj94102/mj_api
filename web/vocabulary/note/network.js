@@ -56,7 +56,7 @@ function drawWordList(list) {
 
         item.examples.forEach(example => {
             const exampleContainer = document.createElement('div');
-            exampleContainer.className = 'exampleCo정ntainer';
+            exampleContainer.className = 'exampleContainer';
 
             const exampleOriginal = document.createElement('div');
             exampleOriginal.className = 'exampleOriginal';
