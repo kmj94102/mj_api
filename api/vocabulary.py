@@ -89,7 +89,7 @@ async def insert_word_example(_list: List[WordExample]):
         session.close()
 
 
-@router.post("/select/note", summary="/select/note")
+@router.post("/select/note", summary="노트 조회")
 async def select_vocabulary_note(item: NoteSelectParam):
     """
     단어장 조회
@@ -125,14 +125,15 @@ async def select_vocabulary_note(item: IdParam):
     _list = session.query(WordTable).filter(WordTable.noteId == item.idx).all()
     return [
         {
-            "noteId": item.noteId,
-            "word": item.word,
-            "meaning": item.meaning,
-            "note1": item.note1,
-            "note2": item.note2,
-            "examples": session.query(WordExampleTable).filter(WordExampleTable.wordId == item.wordId).all()
+            "noteId": word.noteId,
+            "wordId": word.wordId,
+            "word": word.word,
+            "meaning": word.meaning,
+            "note1": word.note1,
+            "note2": word.note2,
+            "examples": session.query(WordExampleTable).filter(WordExampleTable.wordId == word.wordId).all()
         }
-        for item in _list
+        for word in _list
     ]
 
 
