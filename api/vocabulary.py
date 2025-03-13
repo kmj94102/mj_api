@@ -160,6 +160,7 @@ async def insert_wrong_answer(_list: List[WrongAnswerInsertParam]):
         raise_http_exception(f"오류가 발생하였습니다. {e}")
     finally:
         session.close()
+        return "등록 완료"
 
 
 @router.post("/select/wrongAnswer", summary="오답 조회")
