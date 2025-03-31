@@ -1,6 +1,7 @@
 const pokemonList = document.getElementById('pokemon-list');
 
 let isLoading = false;
+let isAll = true;
 let currentPage = 0;
 let generate = "";
 let selectNumber = '';
@@ -8,13 +9,15 @@ let selectNumber = '';
 const fetchData = async () => {
     isLoading = true;
 
-    const response = await fetch(`https://port-0-mj-api-e9btb72blgnd5rgr.sel3.cloudtype.app/pokemon/select/list?skip=${currentPage * 100}&limit=100&generation=${generate}`);
+    const response = await fetch(`https://port-0-mj-api-e9btb72blgnd5rgr.sel3.cloudtype.app/pokemon/select/list?skip=${currentPage * 500}&limit=500&generation=${generate}`);
     const data = await response.json();
     console.log(currentPage);
     const pokemonName = document.getElementById('pokemonName');
     const infoDialog = document.getElementById('infoDialog');
+    const notCatch = document.getElementById('notCatch');
 
-    data.list.forEach((pokemon, index) => {
+    const list = isAll ? data.list : data.list.filter(item => !item.isCatch);
+    list.forEach((pokemon, index) => {
         const item = document.createElement('div');
         item.className = 'pokemon-item';
         item.setAttribute('data-text', pokemon.number);
@@ -53,6 +56,7 @@ const fetchData = async () => {
         pokemonList.appendChild(item);
     });
 
+    notCatch.innerText = isAll ? '' : document.querySelectorAll("#pokemon-list > .pokemon-item").length;
     isLoading = false;
     currentPage++;
 };
@@ -100,6 +104,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
             closeDialog();
         });
+    });
+
+    const isAllBtn = document.getElementById("isAll");
+    isAllBtn.addEventListener('click', () => {
+        console.log('before isAll:', isAll);
+        isAll = !isAll;
+        console.log('after isAll:', isAll);
+        if(isAll) {
+            isAllBtn.src = "ic_shiny.svg";
+        } else {
+            isAllBtn.src = "ic_normal.svg";
+        }
+
+        currentPage = 0;
+        pokemonList.innerHTML = '';
+        fetchData();
     });
 });
 
