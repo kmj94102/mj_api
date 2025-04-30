@@ -1,11 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from db import session
 from model.model import PokemonTable, Pokemon, create_pokemon_table, \
     CharacteristicTable, Characteristic, create_characteristic_table, \
     UpdateIsCatch, UpdatePokemonImage, \
     EvolutionTable, Evolution, create_evolution_table, \
     EvolutionTypeTable, EvolutionType, create_evolution_type_table
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import aliased
@@ -50,26 +50,53 @@ async def read_pokemon_with_number(number: str):
 
 
 @router.get("/select/list")
-async def read_pokemon_list(name: str = "", skip: int = 0, limit: int = 100, generation: str = ""):
+async def read_pokemon_list(name: str = "", skip: int = 0, limit: int = 100, generations: str = "", types: str = "",
+                            is_catch: str = ""):
     """
     포켓몬 리스트 조회
     - **name**: 포켓몬 이름
     - **skip**: 시작 인덱스 번호
     - **limit**: 한번 호출 시 불러올 개수
+    - **generations**: 세대 조건 (빈 값일 경우 전체 조회)
+    - **types**: 타입 조건 (빈 값일 경우 전체 조회)
+    - **is_catch**: 잡은 상태 여부 (all 일 경우 전체 조회)
     """
     session.commit()
+    generation_list = [int(t.strip()) for t in generations.split(",") if t.strip().isdigit()]
+    if len(generation_list) == 0:
+        generation_list = read_generations()
+
+    isCatch = []
+    if is_catch == 'all':
+        isCatch = [True, False]
+    else:
+        isCatch = [False]
+
     pokemon_list = session.query(PokemonTable.index, PokemonTable.number, PokemonTable.name, PokemonTable.spotlight,
                                  PokemonTable.shinySpotlight, PokemonTable.isCatch, PokemonTable.image,
                                  PokemonTable.shinyImage) \
-        .filter(PokemonTable.name.like(f"%{name}%"), PokemonTable.generation.like(f"%{generation}%")) \
+        .filter(PokemonTable.name.like(f"%{name}%"), PokemonTable.generation.in_(generation_list),
+                PokemonTable.isCatch.in_(isCatch), PokemonTable.attribute.like(f"%{types}%")) \
         .offset(skip).limit(limit).all()
 
-    total_size = session.query(PokemonTable)\
-        .filter(PokemonTable.name.like(f"%{name}%"), PokemonTable.generation.like(f"%{generation}%")).count()
+    total_size = session.query(PokemonTable) \
+        .filter(PokemonTable.name.like(f"%{name}%"), PokemonTable.generation.in_(generation_list),
+                PokemonTable.isCatch.in_(isCatch), PokemonTable.attribute.like(f"%{types}%")).count()
     return {
         "list": pokemon_list,
         "totalSize": total_size
     }
+
+
+def read_generations() -> List[int]:
+    session.commit()
+    result = session.query(
+        PokemonTable.generation
+    ).group_by(
+        PokemonTable.generation
+    ).all()
+
+    return [item["generation"] for item in result]
 
 
 @router.get("/select/detail/{number}")
