@@ -104,16 +104,26 @@ async def select_vocabulary_note(item: NoteSelectParam):
         end_date = datetime(item.year, item.month + 1, 1)
 
     if item.language == 'all':
-        return session.query(VocabularyNoteTable). \
+        results = session.query(VocabularyNoteTable). \
             filter(VocabularyNoteTable.timestamp >= start_date). \
             filter(VocabularyNoteTable.timestamp < end_date). \
             all()
     else:
-        return session.query(VocabularyNoteTable). \
+        results = session.query(VocabularyNoteTable). \
             filter(VocabularyNoteTable.timestamp >= start_date). \
             filter(VocabularyNoteTable.timestamp < end_date). \
             filter(VocabularyNoteTable.language == item.language).\
             all()
+
+    return [
+        {
+            "language": obj.language,
+            "timestamp": obj.timestamp.strftime("%Y-%m-%d"),
+            "noteId": obj.noteId,
+            "title": obj.title,
+        }
+        for obj in results
+    ]
 
 
 @router.post("/select/word", summary="단어장 상세 조회")
