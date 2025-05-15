@@ -177,12 +177,30 @@ async def insert_wrong_answer(_list: List[WrongAnswerInsertParam]):
 async def select_wrong_answer(param: WrongAnswerSelectParam):
     session.commit()
 
-    _list = session.query(WrongAnswerTable).filter(WrongAnswerTable.noteId.like(f"%{param.noteIdx}%")) \
-        .order_by(WrongAnswerTable.timestamp).offset(param.skip).limit(param.limit).all()
+    if param.sort == 'counter':
+        query = session.query(WrongAnswerTable).order_by(WrongAnswerTable.timestamp.desc()).offset(param.skip).limit(param.limit)
+    else:
+        query = session.query(WrongAnswerTable).order_by(WrongAnswerTable.count.desc()).offset(param.skip).limit(param.limit)
 
-    count = session.query(WrongAnswerTable).filter(WrongAnswerTable.noteId.like(f"%{param.noteIdx}%")).count()
+    _list = query.all()
+    count = session.query(WrongAnswerTable).count()
+    results = []
+    for item in _list:
+        word = session.query(WordTable).filter(WordTable.wordId == item.wordId).first()
+        result = {
+            "noteId": word.noteId,
+            "wordId": word.wordId,
+            "word": word.word,
+            "meaning": word.meaning,
+            "note1": word.note1,
+            "note2": word.note2,
+            "count": item.count,
+            "examples": session.query(WordExampleTable).filter(WordExampleTable.wordId == word.wordId).all(),
+        }
+
+        results.append(result)
 
     return {
-        "list": _list,
-        "count": count
+        "list": results,
+        "totalCount": count
     }

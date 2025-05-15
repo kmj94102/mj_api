@@ -3,7 +3,6 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from pydantic import BaseModel
 from datetime import datetime
-from typing import List
 
 Base = declarative_base()
 
@@ -140,6 +139,6 @@ def create_wrong_answer(param: WrongAnswerInsertParam) -> WrongAnswerTable:
 
 
 class WrongAnswerSelectParam(BaseModel):
-    noteIdx: str = ""
+    sort: str = ""
     limit: int = 100
     skip: int = 0
