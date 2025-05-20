@@ -178,9 +178,9 @@ async def select_wrong_answer(param: WrongAnswerSelectParam):
     session.commit()
 
     if param.sort == 'counter':
-        query = session.query(WrongAnswerTable).order_by(WrongAnswerTable.timestamp.desc()).offset(param.skip).limit(param.limit)
-    else:
         query = session.query(WrongAnswerTable).order_by(WrongAnswerTable.count.desc()).offset(param.skip).limit(param.limit)
+    else:
+        query = session.query(WrongAnswerTable).order_by(WrongAnswerTable.timestamp.desc()).offset(param.skip).limit(param.limit)
 
     _list = query.all()
     count = session.query(WrongAnswerTable).count()
