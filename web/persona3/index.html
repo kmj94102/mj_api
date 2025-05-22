@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>페르소나3 스케줄 등록</title>
+    <link rel="stylesheet" href="style.css"/>
+    <script src="network.js"></script>
+</head>
+<body>
+    <div id="container">
+        <h1>스케줄 등록</h1>
+            <label for="month">월:</label>
+            <input type="number" id="month" name="month" required><br><br>
+            <label for="day">일:</label>
+            <input type="number" id="day" name="month" required><br><br>
+            <div id="weekday-container">
+              <button data-day="월요일">월</button>
+              <button data-day="화요일">화</button>
+              <button data-day="수요일">수</button>
+              <button data-day="목요일">목</button>
+              <button data-day="금요일">금</button>
+              <button data-day="토요일">토</button>
+              <button data-day="일요일">일</button>
+            </div>
+            <br><br>
+            <label>제목</label><br>
+            <select id="title">
+              <option value="아침/낮">아침/낮</option>
+              <option value="방과후">방과후</option>
+              <option value="밤">밤</option>
+              <option value="비고">비고</option>
+            </select>
+            <br><br>
+
+            <label>내용</label><br>
+            <textarea rows="4" cols="50" id="contents"></textarea><br><br>
+
+            <label>커뮤니티:</label>
+            <select id="community"></select><br><br>
+            <label for="rank">랭크:</label>
+            <input type="number" id="rank" name="month"><br><br>
+
+            <div id="submit">등록하기</div>
+    </div>
+</body>
+</html>

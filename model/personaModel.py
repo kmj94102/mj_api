@@ -39,7 +39,7 @@ class Persona3Schedule(BaseModel):
             title=self.title,
             contents=self.contents,
             rank=self.rank,
-            monisCompleteth=self.isComplete,
+            isComplete=self.isComplete,
             communityIdx=self.communityIdx,
         )
 
