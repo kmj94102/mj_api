@@ -52,7 +52,7 @@ async function insertSchedule() {
     const day = document.getElementById('day').value;
     const title = document.getElementById('title').value;
     const contents = document.getElementById('contents').value;
-    const community = document.getElementById('community').value;
+    const communityIdx = document.getElementById('community').value;
     const rank = document.getElementById('rank').value;
 
     if(month < 0 || month > 12) {
@@ -63,7 +63,7 @@ async function insertSchedule() {
         alert('일 확인 필요');
         return;
     }
-    if(community != 26 && !rank) {
+    if(communityIdx != 26 && !rank) {
         alert('랭크 확인 필요');
         return;
     }
@@ -74,7 +74,7 @@ async function insertSchedule() {
         dayOfWeek: dayOfWeek,
         title: title,
         contents: contents,
-        community: community,
+        communityIdx: communityIdx,
         rank: rank || 0,
         isComplete: false
     }

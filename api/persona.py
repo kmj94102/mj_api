@@ -33,7 +33,7 @@ async def select_persona3_schedule(item: ScheduleParam):
     ***limit: 조회 개수***
     """
     _list = session.query(Persona3ScheduleTable)\
-        .filter(not Persona3ScheduleTable.isComplete == False)\
+        .filter(Persona3ScheduleTable.isComplete == False)\
         .offset(item.skip).limit(item.limit).all()
 
     return _list
