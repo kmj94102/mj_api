@@ -15,7 +15,13 @@ document.addEventListener("DOMContentLoaded", async function() {
     });
 
     const submit = document.getElementById('submit');
-    submit.addEventListener('click', insertSchedule)
+    submit.addEventListener('click', insertSchedule);
+
+    const clear = document.getElementById('clear');
+    clear.addEventListener('click', () => {
+        document.getElementById('community').value = "";
+        document.getElementById('rank'). value = "";
+    });
 });
 
 function fetchCommunityInfo() {

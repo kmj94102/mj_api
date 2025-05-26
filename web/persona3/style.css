@@ -41,6 +41,13 @@ body
   color: white;
   font-weight: bold;
 }
+#clear {
+    display: inline;
+    background: #0075ff7d;
+    border-radius: 8px;
+    padding: 4px 10px;
+    margin-left: 20px;
+}
 
 #submit {
   background: #0075FF;
