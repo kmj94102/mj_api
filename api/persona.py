@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from fastapi import APIRouter
 
 from db import session
@@ -37,6 +39,39 @@ async def select_persona3_schedule(item: ScheduleParam):
         .offset(item.skip).limit(item.limit).all()
 
     return _list
+
+
+@router.post("/3/select/schedule2", summary="스케줄 조회")
+async def select_persona3_schedule2(item: ScheduleParam):
+    """
+    ***skip: 마지막 번호***
+    ***limit: 조회 개수***
+    """
+    _list = session.query(Persona3ScheduleTable)\
+        .filter(Persona3ScheduleTable.isComplete == False)\
+        .offset(item.skip).limit(item.limit).all()
+
+    grouped = defaultdict(list)
+    for row in _list:
+        date = f"{row.month:02d}.{row.day:02d}"
+        grouped[date].append({
+            "idx": row.idx,
+            "month": row.month,
+            "day": row.day,
+            "dayOfWeek": row.dayOfWeek,
+            "title": row.title,
+            "contents": row.contents,
+            "rank": row.rank,
+            "isComplete": row.isComplete,
+            "communityIdx": row.communityIdx,
+        })
+
+    result = [
+        {"date": date, "items": items}
+        for date, items in grouped.items()
+    ]
+
+    return result
 
 
 @router.post("/3/update/schedule", summary="스케줄 상태 업데이트")
