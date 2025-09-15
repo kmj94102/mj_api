@@ -41,8 +41,8 @@ async def read_calendar_month(year: int, month: int):
 
     while current_date < end_date:
         day_data = await read_calendar(current_date)
-        if day_data:
-            result.append(day_data)
+        # if day_data:
+        result.append(day_data)
         current_date += timedelta(days=1)
 
     return result
@@ -101,6 +101,13 @@ async def read_calendar(current_date: datetime):
             ],
             "planInfoList": plan_info
         }
+    else:
+        return {
+            "date": format_date,
+            "calendarInfoList": [],
+            "scheduleInfoList": [],
+            "planInfoList": []
+        }
 
 
 # 달력 날짜 정보 조회
@@ -137,21 +144,21 @@ async def insert_schedule_item(schedule: Schedule) -> int:
     return schedule.id
 
 
-async def yearly_schedule(item: ScheduleItem, id: int):
+async def yearly_schedule(item: ScheduleItem, _id: int):
     current = item.startTime.replace(year=item.startTime.year + 1)
     while current <= item.recurrenceEndDate:
         item.startTime = current
         item.endTime = item.endTime.replace(year=item.endTime.year + 1)
-        await insert_schedule_item(create_schedule(item, id))
+        await insert_schedule_item(create_schedule(item, _id))
         current = current.replace(year=current.year + 1)
 
 
-async def monthly_schedule(item: ScheduleItem, id: int):
+async def monthly_schedule(item: ScheduleItem, _id: int):
     current = next_year_month(item.startTime)
     while current <= item.recurrenceEndDate:
         item.startTime = current
         item.endTime = item.endTime.replace(year=current.year, month=current.month)
-        await insert_schedule_item(create_schedule(item, id))
+        await insert_schedule_item(create_schedule(item, _id))
         current = next_year_month(current_date=current)
 
 
@@ -165,21 +172,21 @@ def next_year_month(current_date: datetime):
     return current_date.replace(year=nextYear, month=nextMonth)
 
 
-async def weekly_schedule(item: ScheduleItem, id: int):
+async def weekly_schedule(item: ScheduleItem, _id: int):
     current = item.startTime + timedelta(days=7)
     while current <= item.recurrenceEndDate:
         item.startTime = current
         item.endTime = item.endTime + timedelta(days=7)
-        await insert_schedule_item(create_schedule(item, id))
+        await insert_schedule_item(create_schedule(item, _id))
         current = current + timedelta(days=7)
 
 
-async def daily_schedule(item: ScheduleItem, id: int):
+async def daily_schedule(item: ScheduleItem, _id: int):
     current = item.startTime + timedelta(days=1)
     while current <= item.recurrenceEndDate:
         item.startTime = current
         item.endTime = item.endTime + timedelta(days=1)
-        await insert_schedule_item(create_schedule(item, id))
+        await insert_schedule_item(create_schedule(item, _id))
         current = current + timedelta(days=1)
 
 
@@ -196,13 +203,13 @@ async def read_schedule(date: datetime):
 
 
 @router.delete("/delete/schedule")
-async def delete_schedule(id: int):
-    schedule = session.query(Schedule).filter(Schedule.id == id).first()
+async def delete_schedule(_id: int):
+    schedule = session.query(Schedule).filter(Schedule.id == _id).first()
 
     if not schedule:
         raise HTTPException(status_code=404, detail="존재하지 않는 id입니다.")
 
-    session.query(Schedule).filter(Schedule.recurrenceId == id).delete(synchronize_session=False)
+    session.query(Schedule).filter(Schedule.recurrenceId == _id).delete(synchronize_session=False)
 
     session.delete(schedule)
     session.commit()
@@ -256,13 +263,13 @@ async def insert_plan_tasks(item: PlanTasks):
 
 
 @router.delete("/delete/planTasks")
-async def delete_plan_tasks(id: int):
-    plan = session.query(Plan).filter(Plan.id == id).first()
+async def delete_plan_tasks(_id: int):
+    plan = session.query(Plan).filter(Plan.id == _id).first()
 
     if not plan:
         raise HTTPException(status_code=404, detail="존재하지 않는 id입니다.")
 
-    session.query(Task).filter(Task.planId == id).delete(synchronize_session=False)
+    session.query(Task).filter(Task.planId == _id).delete(synchronize_session=False)
 
     session.delete(plan)
     session.commit()
