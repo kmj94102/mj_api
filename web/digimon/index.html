@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+          integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+</head>
+<body>
+<div id="section">
+    <div>
+        <div>계열</div>
+        <input type="text" id="group">
+        <div>레벨</div>
+        <input type="text" id="level">
+        <div>초월 여부</div>
+        <input type="radio" name="isTranscend" id="isTranscendTrue">
+        <label for="isTranscendTrue">True</label>
+        <input type="radio" name="isTranscend" id="isTranscendFalse">
+        <label for="isTranscendFalse">False</label>
+    </div>
+    <div id="division"></div>
+    <div id="digimonInfoContainer">
+        <div class="digimonInfo">
+            <img class="deleteBtn" src="close.svg" width="24px" height="24px">
+            <div>이름</div>
+            <input type="text" id="name">
+            <div>오픈 여부</div>
+            <input type="radio" name="isOpen-1" id="isOpenTrue-1">
+            <label for="isOpenTrue-1">True</label>
+            <input type="radio" name="isOpen-1" id="isOpenFalse-1">
+            <label for="isOpenFalse-1">False</label>
+        </div>
+    </div>
+    <div id="addBtn">추가</div>
+    <div id="saveBtn">저장</div>
+</div>
+<script src="network.js"></script>
+</body>
+</html>

@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     const clear = document.getElementById('clear');
     clear.addEventListener('click', () => {
-        document.getElementById('community').value = "";
+        document.getElementById('community').selectedIndex = 0;
         document.getElementById('rank'). value = "";
     });
 });
