@@ -61,6 +61,16 @@ input[type="text"]
     color: white;
     width: -webkit-fill-available;
 }
+input[type="number"]
+{
+    background-color: #00000000;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin: 10px 0px;
+    color: white;
+    width: -webkit-fill-available;
+}
 #search_button
 {
     padding: 5px 10px;
@@ -139,4 +149,28 @@ input[type="text"]
     border-radius: 24px;
     justify-self: end;
     display: block;
+}
+
+#addBtn
+{
+    display: inline;
+    width: 200px;
+    border: 1px solid #767676;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-right: 10px;
+}
+
+#saveBtn
+{
+    display: inline;
+    border: 1px solid #0075FF;
+    border-radius: 8px;
+    padding: 10px 15px;
+}
+
+#buttons
+{
+    padding: 10px 0px;
+    justify-self: center;
 }
