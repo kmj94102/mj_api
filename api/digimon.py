@@ -85,3 +85,15 @@ async def insert_dmo(data: DmoDigimonGroupCreate):
         "groupName": new_group.name,
         "insertedDigimonCount": len(data.list)
     }
+
+
+@router.post("/select/search/dmo", summary="DMO 디지몬 검색")
+async def select_search_dmo(data: DmoSearch):
+    session.commit()
+    result = session.query(
+        DmoDigimonTable.id.label("digimonId"),
+        DmoDigimonTable.name.label("digimonName"),
+        DmoDigimonGroupTable.name.label("groupName")
+    ).join(DmoDigimonGroupTable, DmoDigimonTable.groupId == DmoDigimonGroupTable.id).filter(DmoDigimonTable.name.like(f"%{data.name}%")).all()
+
+    return result

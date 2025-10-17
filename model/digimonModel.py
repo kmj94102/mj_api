@@ -210,3 +210,7 @@ class DmoDigimonCreate(BaseModel):
 class DmoDigimonGroupCreate(BaseModel):
     groupName: str
     list: List[DmoDigimonCreate]
+
+
+class DmoSearch(BaseModel):
+    name: str

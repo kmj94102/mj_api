@@ -1,0 +1,181 @@
+@import url('https://fonts.googleapis.com/css?family=Poppins:200,300,400,500,600,700,800,900&display=swap');
+*
+{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+body
+{
+    font-family: Arial, sans-serif;
+    align-items: center;
+    min-height: 100vh;
+    background: #17181D;
+    margin: 0 50px;
+    color: white;
+    display: flex;
+}
+#section
+{
+    margin: 0 auto;
+    padding: 50px 0px;
+}
+
+#generation
+{
+}
+input[type="radio"]
+{
+    display: none;
+}
+label
+{
+    padding: 10px 20px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    display: inline-block;
+    margin: 5px;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+input[type="radio"]:checked + label
+{
+    background-color: #82E3D2; /* 선택된 배경 색상 */
+    color: white; /* 선택된 글자 색상 */
+    border-color: #82E3D2;
+}
+
+input[type="text"]
+{
+    background-color: #00000000;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin: 10px 0px;
+    color: white;
+    width: -webkit-fill-available;
+}
+input[type="number"]
+{
+    background-color: #00000000;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin: 10px 0px;
+    color: white;
+    width: -webkit-fill-available;
+}
+
+#select
+{
+    display: flex;
+}
+.btn
+{
+    align-self: center;
+    background-color: #82E3D2;
+    border-color: #82E3D2;
+    border-radius: 30px;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    font-size: 20px;
+}
+
+select
+{
+    background: #17181D;
+    color: white;
+    height: 42px;
+    margin: 10px 0px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+#contents
+{
+    display: flex;
+}
+#contents div
+{
+    width: 344px;
+}
+#digimon_list
+{
+    margin-left: 50px;
+}
+.reward
+{
+    display: flex;
+    gap: 10px;
+}
+#select_list
+{
+    display: flex;
+    border: 1px solid #0075FF;
+    border-radius: 16px;
+    padding: 15px 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+.select_digimon
+{
+    border-radius: 8px;
+    background: #0075FF;
+    padding: 8px 10px;
+    cursor: pointer;
+}
+#search
+{
+    display: flex;
+    gap: 10px;
+}
+#search span
+{
+    padding: 10px 0px;
+    width: 64px;
+    text-align: center;
+    background: #0075FF;
+    border-radius: 8px;
+    align-self: center;
+}
+#search_result
+{
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #767676;
+    border-radius: 16px;
+    padding: 15px 20px;
+    gap: 10px;
+    margin-top: 25px;
+}
+.select_result
+{
+    border-radius: 8px;
+    border: 1px solid #767676;
+    padding: 8px 10px;
+    cursor: pointer;
+}
+.select_result:hover
+{
+    border: 1px solid #0075FF;
+}
+.select_result span:nth-child(1)
+{
+    color: #767676;
+    font-size: 14px;
+    display:block;
+}
+
+
+#register
+{
+    text-align: center;
+    padding: 15px;
+    border-radius: 8px;
+    background: #0075FF;
+    font-size: 18px;
+    color: white;
+    margin-top: 50px;
+}
