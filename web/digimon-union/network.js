@@ -26,6 +26,7 @@ const rewardList = [
 {id:24, name: '언노운 SCD'},
 ];
 
+const selectDigimonList = [];
 
 document.querySelectorAll('.rewardType').forEach(select => {
     rewardList.forEach(item => {
@@ -49,16 +50,99 @@ document.getElementById('searchButton').addEventListener('click', () => {
    })
    .then(response => response.json())
    .then(data => {
+      const searchResult = document.getElementById('search_result');
+      searchResult.innerHTML = '';
+
       data.forEach(item => {
-            const digimonName = item['digimonName'];
-            const groupName = item['groupName'];
-            const digimonId = item['digimonId'];
-            console.log("digimonName: " + digimonName + " groupNam: " + groupName);
-        });
+        searchResult.insertAdjacentHTML('beforeend', `
+          <div class="select_result_item" style="width: auto;" data-index="${item['digimonId']}">
+            <span>${item.groupName}</span>
+            <span>${item.digimonName}</span>
+          </div>
+        `);
+      });
    })
    .catch(error => {
       alert('조회 실패');
       console.error('Error:', error);
    });
 
+});
+
+ document.getElementById('search_result').addEventListener('click', e => {
+  const div = e.target.closest('.select_result_item');
+  if (!div) return;
+
+  const digimonId = parseInt(div.dataset.index);
+  const spans = div.querySelectorAll('span');
+  const groupName = spans[0]?.textContent.trim();
+  const digimonName = spans[1]?.textContent.trim();
+
+  if (groupName && digimonName) {
+    console.log('선택된 그룹:', groupName);
+    console.log('선택된 디지몬:', digimonName);
+
+    selectDigimonList.push({groupName: groupName, digimonName: digimonName, digimonId: digimonId});
+    updateSelectList();
+  }
+});
+
+function updateSelectList() {
+    const selectList = document.getElementById('select_list');
+    selectList.innerHTML = '';
+    selectDigimonList.forEach(item => {
+        selectList.insertAdjacentHTML('beforeend',
+        `<span class="select_digimon">${item['digimonName']}</span>`
+      )
+    });
+}
+
+document.getElementById('register').addEventListener('click', e=> {
+    const unionName = document.getElementById('union_name').value;
+
+    const digimonRewardValue = parseInt(document.getElementById('digimonRewardValue').value);
+    const digimonRewardType = document.getElementById('digimonRewardType').value;
+    const levelRewardValue = parseInt(document.getElementById('levelRewardValue').value);
+    const levelRewardType = document.getElementById('levelRewardType').value;
+    const transcendRewardValue = parseInt(document.getElementById('transcendRewardValue').value);
+    const transcendRewardType = document.getElementById('transcendRewardType').value;
+    const lastLevelRewardValue = parseInt(document.getElementById('lastLevelRewardValue').value);
+    const lastLevelRewardType = document.getElementById('lastLevelRewardType').value;
+
+    const level = parseInt(document.getElementById('level').value);
+    const lastLevel = parseInt(document.getElementById('lastLevel').value);
+    const length = selectDigimonList.length;
+
+    const rewardNConditions = [
+        {rewardType: rewardList[digimonRewardType].id, rewardValue: digimonRewardValue, conditionType: 1, conditionValue: length},
+        {rewardType: rewardList[levelRewardType].id, rewardValue: levelRewardValue, conditionType: 2, conditionValue: level},
+        {rewardType: rewardList[transcendRewardType].id, rewardValue: transcendRewardValue, conditionType: 3, conditionValue: length},
+        {rewardType: rewardList[lastLevelRewardType].id, rewardValue: lastLevelRewardValue, conditionType: 4, conditionValue: lastLevel},
+    ];
+
+    const digimonList = selectDigimonList.map(item => ({
+        digimonId: item.digimonId
+    }));
+
+    const data = {
+        unionName: unionName,
+        rewardNConditions: rewardNConditions,
+        digimonList: digimonList
+    }
+
+      fetch('https://port-0-mj-api-e9btb72blgnd5rgr.sel3.cloudtype.app/digimon/insert/dmo/union', {
+       method: 'POST',
+       headers: {
+           'Content-Type': 'application/json'
+       },
+       body: JSON.stringify(data)
+   })
+   .then(response => response.json())
+   .then(_ => {
+      alert(unionName + ' 등록 성공');
+   })
+   .catch(error => {
+      alert('등록 실패');
+      console.error('Error:', error);
+   });
 });

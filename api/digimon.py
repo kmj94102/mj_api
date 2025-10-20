@@ -39,11 +39,11 @@ async def select_digimon():
     """
     디지몬 조회
     """
-    return session\
+    return session \
         .query(DigimonTable.id, DigimonTable.name, DigimonLevelTable.level, DigimonTable.type, DigimonTable.field,
                DigimonTable.description, DigimonTable.sprites, DigimonTable.property,
-               DigimonTable.lethalMove, DigimonTable.image)\
-        .join(DigimonLevelTable, DigimonLevelTable.id == DigimonTable.levelId)\
+               DigimonTable.lethalMove, DigimonTable.image) \
+        .join(DigimonLevelTable, DigimonLevelTable.id == DigimonTable.levelId) \
         .all()
 
 
@@ -94,6 +94,34 @@ async def select_search_dmo(data: DmoSearch):
         DmoDigimonTable.id.label("digimonId"),
         DmoDigimonTable.name.label("digimonName"),
         DmoDigimonGroupTable.name.label("groupName")
-    ).join(DmoDigimonGroupTable, DmoDigimonTable.groupId == DmoDigimonGroupTable.id).filter(DmoDigimonTable.name.like(f"%{data.name}%")).all()
+    ).join(DmoDigimonGroupTable, DmoDigimonTable.groupId == DmoDigimonGroupTable.id).filter(
+        DmoDigimonTable.name.like(f"%{data.name}%")).all()
 
     return result
+
+
+@router.post("/insert/dmo/union")
+async def insert_dmo_union(item: DigimonUnionInsertParam):
+    new_group = DmoUnionGroup(name=item.unionName)
+    session.add(new_group)
+    session.commit()
+    session.refresh(new_group)
+
+    try:
+        for digimon in item.digimonList:
+            newUnion = DmoUnionTable(digimonId=digimon.digimonId, unionId=new_group.id)
+            session.add(newUnion)
+
+        for data in item.rewardNConditions:
+            condition = DmoUnionConditionsTable(conditionId=data.conditionType, conditionValue=data.conditionValue,
+                                                rewardId=data.rewardType, rewardValue=data.rewardValue,
+                                                unionId=new_group.id)
+            session.add(condition)
+
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        print(e)
+        raise_http_exception("등록에 실패하였습니다")
+
+    return "test"

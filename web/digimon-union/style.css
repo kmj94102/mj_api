@@ -150,18 +150,18 @@ select
     gap: 10px;
     margin-top: 25px;
 }
-.select_result
+.select_result_item
 {
     border-radius: 8px;
     border: 1px solid #767676;
     padding: 8px 10px;
     cursor: pointer;
 }
-.select_result:hover
+.select_result_item:hover
 {
     border: 1px solid #0075FF;
 }
-.select_result span:nth-child(1)
+.select_result_item span:nth-child(1)
 {
     color: #767676;
     font-size: 14px;

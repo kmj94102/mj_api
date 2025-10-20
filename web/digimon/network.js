@@ -43,7 +43,7 @@ saveBtn.addEventListener('click', () => {
     const name = group.querySelector('input[name="name"]').value.trim();
     const isOpen = group.querySelector('input[type="radio"]').checked;
 
-    if(name && isOpen) {
+    if(name) {
       list.push({
         name: name,
         isOpen: isOpen,
@@ -75,7 +75,7 @@ saveBtn.addEventListener('click', () => {
 
   console.log('입력된 데이터:', data);
 
-  fetch('http://127.0.0.1:8000/digimon/insert/dmo', {
+  fetch('https://port-0-mj-api-e9btb72blgnd5rgr.sel3.cloudtype.app/digimon/insert/dmo', {
        method: 'POST',
        headers: {
            'Content-Type': 'application/json'

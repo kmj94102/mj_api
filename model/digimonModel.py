@@ -214,3 +214,20 @@ class DmoDigimonGroupCreate(BaseModel):
 
 class DmoSearch(BaseModel):
     name: str
+
+
+class UnionRewardNConditions(BaseModel):
+    rewardType: int
+    rewardValue: int
+    conditionType: int
+    conditionValue: int
+
+
+class UnionDigimon(BaseModel):
+    digimonId: int
+
+
+class DigimonUnionInsertParam(BaseModel):
+    unionName: str
+    rewardNConditions: list[UnionRewardNConditions]
+    digimonList: list[UnionDigimon]
