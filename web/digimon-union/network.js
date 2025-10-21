@@ -26,7 +26,7 @@ const rewardList = [
 {id:24, name: '언노운 SCD'},
 ];
 
-const selectDigimonList = [];
+let selectDigimonList = [];
 
 document.querySelectorAll('.rewardType').forEach(select => {
     rewardList.forEach(item => {
@@ -85,6 +85,16 @@ document.getElementById('searchButton').addEventListener('click', () => {
     selectDigimonList.push({groupName: groupName, digimonName: digimonName, digimonId: digimonId});
     updateSelectList();
   }
+});
+
+document.getElementById('select_list').addEventListener('click', e => {
+    const span = e.target.closest('.select_digimon');
+    if (!span) return;
+
+    const targetName = span.textContent.trim();
+    console.log(targetName);
+    selectDigimonList = selectDigimonList.filter(item => item.digimonName !== targetName);
+    updateSelectList();
 });
 
 function updateSelectList() {

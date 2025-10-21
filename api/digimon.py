@@ -102,7 +102,7 @@ async def select_search_dmo(data: DmoSearch):
 
 @router.post("/insert/dmo/union")
 async def insert_dmo_union(item: DigimonUnionInsertParam):
-    new_group = DmoUnionGroup(name=item.unionName)
+    new_group = DmoUnionGroupTable(name=item.unionName)
     session.add(new_group)
     session.commit()
     session.refresh(new_group)
