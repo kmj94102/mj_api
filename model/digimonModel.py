@@ -88,6 +88,7 @@ class DmoUnionGroupTable(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), nullable=False)
+    isFavorite = Column(Boolean, default=False)
 
     unions = relationship("DmoUnionTable", back_populates="union_group")
     conditions = relationship("DmoUnionConditionsTable", back_populates="union_group")
@@ -231,3 +232,24 @@ class DigimonUnionInsertParam(BaseModel):
     unionName: str
     rewardNConditions: list[UnionRewardNConditions]
     digimonList: list[UnionDigimon]
+
+
+class IsOpenParam(BaseModel):
+    id: int
+    isOpen: bool
+
+
+class UnionDigimonUpdateParam(BaseModel):
+    level: int
+    groupId: int
+    isTranscend: bool
+    isOpenInfo: list[IsOpenParam]
+
+
+class UnionGroupFavoriteUpdateParam(BaseModel):
+    groupId: int
+    isFavorite: bool
+
+
+class IdParam(BaseModel):
+    id: int

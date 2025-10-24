@@ -1,12 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from db import session
 from model.common import raise_http_exception
 from model.digimonModel import *
-from typing import List
-
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import aliased
-from sqlalchemy import text
 
 router = APIRouter()
 
@@ -100,7 +95,7 @@ async def select_search_dmo(data: DmoSearch):
     return result
 
 
-@router.post("/insert/dmo/union")
+@router.post("/insert/dmo/union", summary="DMO 유니온 등록")
 async def insert_dmo_union(item: DigimonUnionInsertParam):
     new_group = DmoUnionGroupTable(name=item.unionName)
     session.add(new_group)
@@ -124,4 +119,111 @@ async def insert_dmo_union(item: DigimonUnionInsertParam):
         print(e)
         raise_http_exception("등록에 실패하였습니다")
 
-    return "test"
+
+@router.post('/select/dmo/union/list', summary="DMO 유니온 리스트 조회")
+async def select_dmo_union_list():
+    session.commit()
+
+    groupList = session.query(DmoUnionGroupTable).order_by(
+        DmoUnionGroupTable.isFavorite.desc()
+    ).all()
+
+    return [
+        {
+            "unionId": group.id,
+            "groupName": group.name,
+            "isFavorite": group.isFavorite,
+            "conditions": session.query(
+                DmoUnionConditionsTable.id, DmoUnionConditionsTable.rewardId, DmoUnionConditionsTable.rewardValue,
+                DmoUnionConditionsTable.conditionId, DmoUnionConditionsTable.conditionValue,
+                DmoUnionProgressTable.isComplete
+            ).where(
+                DmoUnionConditionsTable.unionId == group.id
+            ).join(
+                DmoUnionProgressTable, isouter=True
+            ).all()
+        }
+        for group in groupList
+    ]
+
+
+@router.post("/select/union/detail", summary="DMO 유니온 상세 조회")
+async def select_dmo_union_detail(item: IdParam):
+    session.commit()
+
+    conditionInfo = session.query(
+        DmoUnionConditionsTable.id, DmoUnionConditionsTable.rewardId, DmoUnionConditionsTable.rewardValue,
+        DmoUnionConditionsTable.conditionId, DmoUnionConditionsTable.conditionValue, DmoUnionProgressTable.isComplete
+    ).where(
+        DmoUnionConditionsTable.unionId == item.id
+    ).join(
+        DmoUnionProgressTable, isouter=True
+    ).all()
+
+    digimonInfo = session.query(
+        DmoUnionTable.unionId, DigimonTable.id, DmoDigimonTable.name, DmoDigimonTable.level, DmoDigimonTable.image,
+        DmoDigimonTable.isOpen, DmoDigimonTable.isTranscend
+    ).where(
+        DmoUnionTable.unionId == item.id
+    ).join(
+        DmoDigimonTable, DmoDigimonTable.id == DmoUnionTable.digimonId
+    ).all()
+
+    return {
+        "conditionInfo": conditionInfo,
+        "digimonInfo": digimonInfo
+    }
+
+
+@router.post('/select/union/digimon', summary='DMO 유니온 디지몬 정보 조회')
+async def select_union_digimon(item: IdParam):
+    session.commit()
+
+    selectDigimon = session.query(DmoDigimonTable).where(DmoDigimonTable.id == item.id).first()
+    return session.query(DmoDigimonTable).where(DmoDigimonTable.groupId == selectDigimon.groupId).all()
+
+
+@router.post('/update/union/digimon', summary='DMO 유니온 디지몬 정보 업데이트')
+async def update_union_digimon(item: UnionDigimonUpdateParam):
+    session.query()
+    try:
+        session.query(
+            DmoDigimonTable
+        ).filter(
+            DmoDigimonTable.groupId == item.groupId
+        ).update(
+            {DmoDigimonTable.level: item.level, DmoDigimonTable.isTranscend: item.isTranscend}
+        )
+
+        for digimon in item.isOpenInfo:
+            session.query(
+                DmoDigimonTable
+            ).filter(
+                DmoDigimonTable.id == digimon.id
+            ).update(
+                {DmoDigimonTable.isOpen: digimon.isOpen}
+            )
+
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        return f"업데이트 실패: {e}"
+
+    return "업데이트 성공"
+
+
+@router.post('/update/union/favorite', summary="DMO 유니온 그룹 즐겨찾기 업데이트")
+async def update_union_group_favorite(item: UnionGroupFavoriteUpdateParam):
+    try:
+        session.query(
+            DmoUnionGroupTable
+        ).filter(
+            DmoUnionGroupTable.id == item.groupId
+        ).update(
+            {DmoUnionGroupTable.isFavorite: item.isFavorite}
+        )
+        session.commit()
+    except Exception as e:
+        return f"업데이트 실패: {e}"
+
+    return "업데이트 성공"
