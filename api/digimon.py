@@ -155,6 +155,8 @@ async def select_dmo_union_list():
 async def select_dmo_union_detail(item: IdParam):
     session.commit()
 
+    unionGroupName = session.query(DmoUnionGroupTable.name).where(DmoUnionGroupTable.id == item.id).first()
+
     conditionInfo = session.query(
         DmoUnionConditionsTable.id, DmoRewardTypeTable.type.label('rewardType'), DmoUnionConditionsTable.rewardValue,
         DmoConditionTypeTable.type.label('conditionType'), DmoUnionConditionsTable.conditionValue,
@@ -179,6 +181,7 @@ async def select_dmo_union_detail(item: IdParam):
     ).all()
 
     return {
+        "name": unionGroupName,
         "conditionInfo": conditionInfo,
         "digimonInfo": digimonInfo
     }
