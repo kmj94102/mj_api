@@ -134,13 +134,17 @@ async def select_dmo_union_list():
             "groupName": group.name,
             "isFavorite": group.isFavorite,
             "conditions": session.query(
-                DmoUnionConditionsTable.id, DmoUnionConditionsTable.rewardId, DmoUnionConditionsTable.rewardValue,
-                DmoUnionConditionsTable.conditionId, DmoUnionConditionsTable.conditionValue,
-                DmoUnionProgressTable.isComplete
+                DmoUnionConditionsTable.id, DmoRewardTypeTable.type.label('rewardType'),
+                DmoUnionConditionsTable.rewardValue, DmoConditionTypeTable.type.label('conditionType'),
+                DmoUnionConditionsTable.conditionValue, DmoUnionProgressTable.isComplete
             ).where(
                 DmoUnionConditionsTable.unionId == group.id
             ).join(
                 DmoUnionProgressTable, isouter=True
+            ).join(
+                DmoConditionTypeTable
+            ).join(
+                DmoRewardTypeTable
             ).all()
         }
         for group in groupList
@@ -152,12 +156,17 @@ async def select_dmo_union_detail(item: IdParam):
     session.commit()
 
     conditionInfo = session.query(
-        DmoUnionConditionsTable.id, DmoUnionConditionsTable.rewardId, DmoUnionConditionsTable.rewardValue,
-        DmoUnionConditionsTable.conditionId, DmoUnionConditionsTable.conditionValue, DmoUnionProgressTable.isComplete
+        DmoUnionConditionsTable.id, DmoRewardTypeTable.type.label('rewardType'), DmoUnionConditionsTable.rewardValue,
+        DmoConditionTypeTable.type.label('conditionType'), DmoUnionConditionsTable.conditionValue,
+        DmoUnionProgressTable.isComplete
     ).where(
         DmoUnionConditionsTable.unionId == item.id
     ).join(
         DmoUnionProgressTable, isouter=True
+    ).join(
+        DmoConditionTypeTable
+    ).join(
+        DmoRewardTypeTable
     ).all()
 
     digimonInfo = session.query(
