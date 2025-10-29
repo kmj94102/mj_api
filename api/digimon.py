@@ -158,8 +158,9 @@ async def select_dmo_union_detail(item: IdParam):
     unionGroupName = session.query(DmoUnionGroupTable.name).where(DmoUnionGroupTable.id == item.id).first()
 
     conditionInfo = session.query(
-        DmoUnionConditionsTable.id, DmoRewardTypeTable.type.label('rewardType'), DmoUnionConditionsTable.rewardValue,
-        DmoConditionTypeTable.type.label('conditionType'), DmoUnionConditionsTable.conditionValue,
+        DmoUnionConditionsTable.id, DmoRewardTypeTable.type.label('rewardType'), DmoUnionConditionsTable.rewardId,
+        DmoUnionConditionsTable.rewardValue, DmoConditionTypeTable.type.label('conditionType'),
+        DmoUnionConditionsTable.conditionId, DmoUnionConditionsTable.conditionValue,
         DmoUnionProgressTable.isComplete
     ).where(
         DmoUnionConditionsTable.unionId == item.id
