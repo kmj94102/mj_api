@@ -182,7 +182,7 @@ async def select_dmo_union_detail(item: IdParam):
     ).all()
 
     return {
-        "name": unionGroupName,
+        "name": unionGroupName.name,
         "conditionInfo": conditionInfo,
         "digimonInfo": digimonInfo
     }
