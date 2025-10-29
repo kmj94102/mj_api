@@ -173,12 +173,12 @@ async def select_dmo_union_detail(item: IdParam):
     ).all()
 
     digimonInfo = session.query(
-        DmoUnionTable.unionId, DigimonTable.id, DmoDigimonTable.name, DmoDigimonTable.level, DmoDigimonTable.image,
+        DmoUnionTable.unionId, DmoUnionTable.digimonId, DmoDigimonTable.name, DmoDigimonTable.level, DmoDigimonTable.image,
         DmoDigimonTable.isOpen, DmoDigimonTable.isTranscend
     ).where(
         DmoUnionTable.unionId == item.id
     ).join(
-        DmoDigimonTable, DmoDigimonTable.id == DmoUnionTable.digimonId
+        DmoDigimonTable
     ).all()
 
     return {
