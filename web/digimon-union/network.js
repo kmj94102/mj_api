@@ -124,10 +124,10 @@ document.getElementById('register').addEventListener('click', e=> {
     const length = selectDigimonList.length;
 
     const rewardNConditions = [
-        {rewardType: rewardList[digimonRewardType].id, rewardValue: digimonRewardValue, conditionType: 1, conditionValue: length},
-        {rewardType: rewardList[levelRewardType].id, rewardValue: levelRewardValue, conditionType: 2, conditionValue: level},
-        {rewardType: rewardList[transcendRewardType].id, rewardValue: transcendRewardValue, conditionType: 3, conditionValue: length},
-        {rewardType: rewardList[lastLevelRewardType].id, rewardValue: lastLevelRewardValue, conditionType: 4, conditionValue: lastLevel},
+        {rewardType: rewardList[digimonRewardType - 1].id, rewardValue: digimonRewardValue, conditionType: 1, conditionValue: length},
+        {rewardType: rewardList[levelRewardType - 1].id, rewardValue: levelRewardValue, conditionType: 2, conditionValue: level},
+        {rewardType: rewardList[transcendRewardType - 1].id, rewardValue: transcendRewardValue, conditionType: 3, conditionValue: length},
+        {rewardType: rewardList[lastLevelRewardType - 1].id, rewardValue: lastLevelRewardValue, conditionType: 4, conditionValue: lastLevel},
     ];
 
     const digimonList = selectDigimonList.map(item => ({
@@ -139,20 +139,21 @@ document.getElementById('register').addEventListener('click', e=> {
         rewardNConditions: rewardNConditions,
         digimonList: digimonList
     }
+    console.log(data);
 
-      fetch('https://port-0-mj-api-e9btb72blgnd5rgr.sel3.cloudtype.app/digimon/insert/dmo/union', {
-       method: 'POST',
-       headers: {
-           'Content-Type': 'application/json'
-       },
-       body: JSON.stringify(data)
-   })
-   .then(response => response.json())
-   .then(_ => {
-      alert(unionName + ' 등록 성공');
-   })
-   .catch(error => {
-      alert('등록 실패');
-      console.error('Error:', error);
-   });
+//   fetch('https://port-0-mj-api-e9btb72blgnd5rgr.sel3.cloudtype.app/digimon/insert/dmo/union', {
+//       method: 'POST',
+//       headers: {
+//           'Content-Type': 'application/json'
+//       },
+//       body: JSON.stringify(data)
+//   })
+//   .then(response => response.json())
+//   .then(_ => {
+//      alert(unionName + ' 등록 성공');
+//   })
+//   .catch(error => {
+//      alert('등록 실패');
+//      console.error('Error:', error);
+//   });
 });
