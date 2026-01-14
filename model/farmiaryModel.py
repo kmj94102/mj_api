@@ -1,97 +1,134 @@
-from datetime import datetime, date
+from datetime import datetime
 from sqlalchemy import (
     Column, Integer, String, DateTime, Date, Text, ForeignKey
 )
-from sqlalchemy.orm import DeclarativeBase, relationship
+from sqlalchemy.orm import relationship
 from db import Base
 from pydantic import BaseModel
 
 
-class UserTable(Base):
+class IdParam(BaseModel):
+    idx: int = None
+
+
+class FarmiaryUserTable(Base):
     __tablename__ = "farmiary_users"
 
-    idx = Column(Integer, primary_key=True)
-    email = Column(String(100), unique=True, nullable=False)
-    login_type = Column(String(20), nullable=False)
-    name = Column(String(50), nullable=False)
+    idx = Column(Integer, primary_key=True, autoincrement=True)
+    email = Column(String(100), unique=True)
+    login_type = Column(String(20))
+    name = Column(String(50))
     profile_image = Column(String(255))
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    farms = relationship("FarmGroup", back_populates="user")
-    
-    
+
 class FarmiaryUser(BaseModel):
-    idx: int = None
-    email: str = None
     loginType: str = None
+    email: str = None
     name: str = None
     profileImage: str = None
-    createdAt: datetime = None
+
+    def toTable(self) -> FarmiaryUserTable:
+        return FarmiaryUserTable(
+            login_type=self.loginType,
+            email=self.email,
+            name=self.name,
+            profile_image=self.profileImage,
+            created_at=datetime.now()
+        )
 
 
 class FarmTable(Base):
     __tablename__ = "farms"
 
-    idx = Column(Integer, primary_key=True)
+    idx = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False)
     address = Column(String(255))
     info = Column(Text)
     qr = Column(String(255))
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    users = relationship("FarmGroup", back_populates="farm")
-    plants = relationship("Plant", back_populates="farm")
-    schedules = relationship("Schedule", back_populates="farm")
-
-
-class Farmiary(BaseModel):
-    idx: int = None
-    name: str = None
-    address: str = None
-    info: str = None
-    qr: str = None
-    createdAt: datetime = None
-
 
 class FarmGroupTable(Base):
     __tablename__ = "farm_groups"
 
     farm_idx = Column(Integer, ForeignKey("farms.idx"), primary_key=True)
-    user_idx = Column(Integer, ForeignKey("users.idx"), primary_key=True)
+    user_idx = Column(Integer, ForeignKey("farmiary_users.idx"), primary_key=True)
     role = Column(String(20), nullable=False)
 
-    farm = relationship("Farm", back_populates="users")
-    user = relationship("User", back_populates="farms")
+    farm = relationship("FarmTable", foreign_keys=[farm_idx])
+    user = relationship("FarmiaryUserTable", foreign_keys=[user_idx])
 
 
-class FarmGroup(BaseModel):
-    farmIdx: int = None
+class NewAddFarm(BaseModel):
+    name: str = None
+    address: str = None
+    info: str = None
     userIdx: int = None
-    role: str = None
+
+    def toFarmTable(self) -> FarmTable:
+        now = datetime.now()
+        return FarmTable(
+            name=self.name,
+            address=self.address,
+            info=self.info,
+            qr=f"Farmiary_{self.name}_{now}",
+            created_at=now
+        )
+
+    def toFarmGroupTable(self, farmIdx) -> FarmGroupTable:
+        return FarmGroupTable(
+            farm_idx=farmIdx,
+            user_idx=self.userIdx,
+            role="MASTER",
+        )
+
+
+class JoinFarm(BaseModel):
+    qr: str = None
+    userIdx: str = None
+
+    def toTable(self, farmIdx) -> FarmGroupTable:
+        return FarmGroupTable(
+            farm_idx=farmIdx,
+            user_idx=self.userIdx,
+            role="MEMBER"
+        )
+
+
+class WithdrawalFarm(BaseModel):
+    userIdx: int = None
+    farmIdx: int = None
 
 
 class PlantTable(Base):
     __tablename__ = "plants"
 
-    idx = Column(Integer, primary_key=True)
+    idx = Column(Integer, primary_key=True, autoincrement=True)
     farm_idx = Column(Integer, ForeignKey("farms.idx"), nullable=False)
     name = Column(String(100), nullable=False)
     start_date = Column(Date)
     end_date = Column(Date)
 
-    farm = relationship("Farm", back_populates="plants")
-    schedules = relationship("SchedulePlant", back_populates="plant")
+    farm = relationship("FarmTable", foreign_keys=[farm_idx])
 
 
 class Plant(BaseModel):
-    idx: int = None
     farmIdx: int = None
     name: str = None
-    startDate: datetime = None
-    endDate: datetime = None
+    startDate: str = None
+    endDate: str = None
+
+    def toTable(self) -> PlantTable:
+        return PlantTable(
+            farm_idx=self.farmIdx,
+            name=self.name,
+            start_date=self.startDate,
+            end_date=self.endDate
+        )
 
 
-class ScheduleTable(Base):
+class Schedule(Base):
     __tablename__ = "farmiary_schedules"
 
     idx = Column(Integer, primary_key=True)
@@ -99,45 +136,24 @@ class ScheduleTable(Base):
     scheduled_at = Column(DateTime, nullable=False)
     contents = Column(Text)
 
-    farm = relationship("Farm", back_populates="schedules")
-    workers = relationship("ScheduleWorker", back_populates="schedule")
-    plants = relationship("SchedulePlant", back_populates="schedule")
+    farm = relationship("FarmTable", foreign_keys=[farm_idx])
 
 
-class FarmiarySchedule(BaseModel):
-    idx: int = None
-    farmIdx: int = None
-    scheduledAt: str = None
-    contents: str = None
-
-
-class ScheduleWorkerTable(Base):
+class ScheduleWorker(Base):
     __tablename__ = "schedule_workers"
 
-    schedule_idx = Column(Integer, ForeignKey("schedules.idx"), primary_key=True)
-    user_idx = Column(Integer, ForeignKey("users.idx"), primary_key=True)
+    schedule_idx = Column(Integer, ForeignKey("farmiary_schedules.idx"), primary_key=True)
+    user_idx = Column(Integer, ForeignKey("farmiary_users.idx"), primary_key=True)
 
-    schedule = relationship("Schedule", back_populates="workers")
-    user = relationship("User")
-
-
-class ScheduleWorker(BaseModel):
-    idx: int = None
-    farmIdx: int = None
-    scheduledAt: str = None
-    contents: str = None
+    schedule = relationship("ScheduleTable", foreign_keys=[schedule_idx])
+    user = relationship("FarmiaryUserTable", foreign_keys=[user_idx])
 
 
-class SchedulePlantTable(Base):
+class SchedulePlant(Base):
     __tablename__ = "schedule_plants"
 
-    schedule_idx = Column(Integer, ForeignKey("schedules.idx"), primary_key=True)
+    schedule_idx = Column(Integer, ForeignKey("farmiary_schedules.idx"), primary_key=True)
     plant_idx = Column(Integer, ForeignKey("plants.idx"), primary_key=True)
 
-    schedule = relationship("Schedule", back_populates="plants")
-    plant = relationship("Plant", back_populates="schedules")
-
-
-class SchedulePlant(BaseModel):
-    scheduleIdx: int = None
-    plantIdx: int = None
+    schedule = relationship("ScheduleTable", foreign_keys=[schedule_idx])
+    plant = relationship("PlantTable", foreign_keys=[plant_idx])
