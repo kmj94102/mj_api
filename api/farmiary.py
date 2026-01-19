@@ -55,6 +55,24 @@ def withdrawal(item: IdParam):
     return "회원 탈퇴하였습니다."
 
 
+@router.post("/user/login", summary="로그인")
+def login(item: LoginParam):
+    """"
+    로그인
+    - **email: 이메일
+    """
+    session.commit()
+    user = session.query(FarmiaryUserTable).filter(FarmiaryUserTable.email == item.email).first()
+
+    if user is None:
+        raise HTTPException(status_code=400, detail="회원가입 후 이용해주세요.")
+
+    if user.login_type != item.loginType:
+        raise HTTPException(status_code=401, detail="다른 방식으로 가입하셨습니다.")
+
+    return user
+
+
 @router.post("/farm/newFarm", summary="신규 팜 등록")
 def insert_new_farm(item: NewAddFarm):
     try:
@@ -155,7 +173,7 @@ def delete_plant(item: IdParam):
 
 
 @router.post("/schedule/insert")
-def insert_schedule():
+def insert_schedule(item: ScheduleParam):
     session.commit()
 
 

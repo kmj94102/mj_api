@@ -1,4 +1,6 @@
 from datetime import datetime
+from typing import List
+
 from sqlalchemy import (
     Column, Integer, String, DateTime, Date, Text, ForeignKey
 )
@@ -36,6 +38,11 @@ class FarmiaryUser(BaseModel):
             profile_image=self.profileImage,
             created_at=datetime.now()
         )
+
+
+class LoginParam(BaseModel):
+    email: str = None
+    loginType: str = None
 
 
 class FarmTable(Base):
@@ -128,10 +135,10 @@ class Plant(BaseModel):
         )
 
 
-class Schedule(Base):
+class ScheduleTable(Base):
     __tablename__ = "farmiary_schedules"
 
-    idx = Column(Integer, primary_key=True)
+    idx = Column(Integer, primary_key=True, autoincrement=True)
     farm_idx = Column(Integer, ForeignKey("farms.idx"), nullable=False)
     scheduled_at = Column(DateTime, nullable=False)
     contents = Column(Text)
@@ -139,7 +146,7 @@ class Schedule(Base):
     farm = relationship("FarmTable", foreign_keys=[farm_idx])
 
 
-class ScheduleWorker(Base):
+class ScheduleWorkerTable(Base):
     __tablename__ = "schedule_workers"
 
     schedule_idx = Column(Integer, ForeignKey("farmiary_schedules.idx"), primary_key=True)
@@ -149,7 +156,7 @@ class ScheduleWorker(Base):
     user = relationship("FarmiaryUserTable", foreign_keys=[user_idx])
 
 
-class SchedulePlant(Base):
+class SchedulePlantTable(Base):
     __tablename__ = "schedule_plants"
 
     schedule_idx = Column(Integer, ForeignKey("farmiary_schedules.idx"), primary_key=True)
@@ -157,3 +164,18 @@ class SchedulePlant(Base):
 
     schedule = relationship("ScheduleTable", foreign_keys=[schedule_idx])
     plant = relationship("PlantTable", foreign_keys=[plant_idx])
+
+
+class ScheduleParam(BaseModel):
+    farmIdx: int = None
+    scheduledAt: datetime = None
+    contents: str = None
+    workerList: List[int]
+    plantList: list[int]
+
+    def toScheduleTable(self) -> ScheduleTable:
+        return ScheduleTable(
+            farm_idx=self.farmIdx,
+            scheduled_at=self.scheduledAt,
+            contents=self.contents
+        )
