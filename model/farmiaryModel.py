@@ -93,7 +93,7 @@ class NewAddFarm(BaseModel):
 
 class JoinFarm(BaseModel):
     qr: str = None
-    userIdx: str = None
+    userIdx: int = None
 
     def toTable(self, farmIdx) -> FarmGroupTable:
         return FarmGroupTable(

@@ -59,7 +59,8 @@ def withdrawal(item: IdParam):
 def login(item: LoginParam):
     """"
     로그인
-    - **email: 이메일
+    - **email**: 이메일
+    - **loginType**: 로그인 타입
     """
     session.commit()
     user = session.query(FarmiaryUserTable).filter(FarmiaryUserTable.email == item.email).first()
@@ -70,7 +71,17 @@ def login(item: LoginParam):
     if user.login_type != item.loginType:
         raise HTTPException(status_code=401, detail="다른 방식으로 가입하셨습니다.")
 
-    return user
+    farmCount = session.query(
+        FarmTable.idx, FarmTable.name, FarmTable.address, FarmTable.info, FarmTable.qr, FarmGroupTable.role
+    ).filter(FarmGroupTable.user_idx == user.idx, FarmTable.idx == FarmGroupTable.farm_idx).count()
+
+    return {
+        "idx": user.idx,
+        "email": user.email,
+        "name": user.name,
+        "profileImage": user.profile_image,
+        "isJoinFarm": farmCount != 0
+    }
 
 
 @router.post("/farm/newFarm", summary="신규 팜 등록")
@@ -152,6 +163,17 @@ def delete_farm(item: WithdrawalFarm):
     session.execute(delete(FarmTable).where(FarmTable.idx == item.farmIdx))
     session.commit()
     return "팜 삭제 완료"
+
+
+@router.post("/farm/select", summary="팜 조회")
+def select_farm(item: IdParam):
+    session.commit()
+
+    farmList = session.query(
+        FarmTable.idx, FarmTable.name, FarmTable.address, FarmTable.info, FarmTable.qr, FarmGroupTable.role
+    ).filter(FarmGroupTable.user_idx == item.idx, FarmTable.idx == FarmGroupTable.farm_idx).all()
+
+    return farmList
 
 
 @router.post("/plant/insert", summary="식물 등록")
