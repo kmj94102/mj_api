@@ -1,8 +1,10 @@
+import calendar
 from datetime import timedelta
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import func, delete
+from sqlalchemy.orm import selectinload
 
 from api.common import get_last_day_time
 from db import session
@@ -178,8 +180,11 @@ def select_farm(item: IdParam):
 
 @router.post("/plant/insert", summary="식물 등록")
 def insert_plant(item: Plant):
-    session.add(item.toTable())
+    plant = item.toTable()
+    session.add(plant)
     session.commit()
+
+    return f"{item.name} 등록 완료"
 
 
 @router.post("/plant/delete", summary="식물 삭제")
@@ -194,24 +199,95 @@ def delete_plant(item: IdParam):
     return f"{plant.name} 삭제 완료"
 
 
-@router.post("/schedule/insert")
+@router.post("/schedule/insert", summary="일정 등록")
 def insert_schedule(item: ScheduleParam):
     session.commit()
 
+    try:
+        session.begin()
+        schedule = item.toScheduleTable()
+        session.add(schedule)
+        session.flush()
 
-@router.get("/schedule/select")
-async def read_calendar_month(year: int, month: int):
-    session.commit()
-    start_date = datetime(year, month, 1)
-    end_date = get_last_day_time(year, month)
-    current_date = start_date
+        for plantIdx in item.plantList:
+            plant = SchedulePlantTable(
+                schedule_idx=schedule.idx,
+                plant_idx=plantIdx
+            )
+            session.add(plant)
+
+        for workerIdx in item.workerList:
+            worker = ScheduleWorkerTable(
+                schedule_idx=schedule.idx,
+                user_idx=workerIdx
+            )
+            session.add(worker)
+
+        session.commit()
+
+    except SQLAlchemyError as e:
+        session.rollback()
+        raise HTTPException(status_code=400, detail=f"오류가 발생하였습니다. {e}")
+    finally:
+        session.close()
+
+    return "등록 완료"
+
+
+def get_schedules(
+    start: datetime,
+    end: datetime,
+    userIdx: int
+):
+    schedules = (
+        session.query(ScheduleTable)
+        .join(FarmGroupTable, FarmGroupTable.farm_idx == ScheduleTable.farm_idx)
+        .filter(FarmGroupTable.user_idx == userIdx)
+        .filter(ScheduleTable.scheduled_at.between(start, end))
+        .options(
+            selectinload(ScheduleTable.plants).selectinload(SchedulePlantTable.plant),
+            selectinload(ScheduleTable.workers).selectinload(ScheduleWorkerTable.user),
+        )
+        .order_by(ScheduleTable.scheduled_at)
+        .all()
+    )
+
+    return schedules
+
+
+@router.post("/schedule/select/month", summary="일정 조회(월)")
+async def read_calendar_month(item: MonthScheduleParam):
+    first_day = datetime(item.year, item.month, 1)
+    last_day_num = calendar.monthrange(item.year, item.month)[1]
+    last_day = datetime(item.year, item.month, last_day_num)
+
+    weekday = first_day.weekday()
+    start_index = (weekday + 1) % 7
+
+    rows = get_schedules(first_day, last_day, item.userIdx)
+
+    data_map = {}
+
+    for row in rows:
+        date_key = row.scheduled_at.strftime("%Y.%m.%d")
+
+        if date_key not in data_map:
+            data_map[date_key] = []
+
+        data_map[date_key].append(row)
 
     result = []
 
-    while current_date < end_date:
-        day_data = await read_schedule(current_date)
-        result.append(day_data)
-        current_date += timedelta(days=1)
+    for _ in range(start_index):
+        result.append(None)
+
+    for day in range(1, last_day_num + 1):
+        date_str = f"{item.year}.{item.month:02d}.{day:02d}"
+
+        result.append({
+            "date": date_str,
+            "data": data_map.get(date_str, [])
+        })
 
     return result
 

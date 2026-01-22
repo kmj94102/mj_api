@@ -1,5 +1,5 @@
-from datetime import datetime
-from typing import List
+from datetime import datetime, date
+from typing import List, Optional
 
 from sqlalchemy import (
     Column, Integer, String, DateTime, Date, Text, ForeignKey
@@ -130,8 +130,8 @@ class Plant(BaseModel):
         return PlantTable(
             farm_idx=self.farmIdx,
             name=self.name,
-            start_date=self.startDate,
-            end_date=self.endDate
+            start_date=yearMonthConver(self.startDate),
+            end_date=yearMonthConver(self.endDate)
         )
 
 
@@ -144,6 +144,15 @@ class ScheduleTable(Base):
     contents = Column(Text)
 
     farm = relationship("FarmTable", foreign_keys=[farm_idx])
+    plants = relationship(
+        "SchedulePlantTable",
+        back_populates="schedule"
+    )
+
+    workers = relationship(
+        "ScheduleWorkerTable",
+        back_populates="schedule"
+    )
 
 
 class ScheduleWorkerTable(Base):
@@ -152,7 +161,13 @@ class ScheduleWorkerTable(Base):
     schedule_idx = Column(Integer, ForeignKey("farmiary_schedules.idx"), primary_key=True)
     user_idx = Column(Integer, ForeignKey("farmiary_users.idx"), primary_key=True)
 
-    schedule = relationship("ScheduleTable", foreign_keys=[schedule_idx])
+    # schedule = relationship("ScheduleTable", foreign_keys=[schedule_idx])
+    # user = relationship("FarmiaryUserTable", foreign_keys=[user_idx])
+    schedule = relationship(
+        "ScheduleTable",
+        back_populates="workers"
+    )
+
     user = relationship("FarmiaryUserTable", foreign_keys=[user_idx])
 
 
@@ -162,7 +177,13 @@ class SchedulePlantTable(Base):
     schedule_idx = Column(Integer, ForeignKey("farmiary_schedules.idx"), primary_key=True)
     plant_idx = Column(Integer, ForeignKey("plants.idx"), primary_key=True)
 
-    schedule = relationship("ScheduleTable", foreign_keys=[schedule_idx])
+    # schedule = relationship("ScheduleTable", foreign_keys=[schedule_idx])
+    # plant = relationship("PlantTable", foreign_keys=[plant_idx])
+    schedule = relationship(
+        "ScheduleTable",
+        back_populates="plants"
+    )
+
     plant = relationship("PlantTable", foreign_keys=[plant_idx])
 
 
@@ -171,7 +192,7 @@ class ScheduleParam(BaseModel):
     scheduledAt: datetime = None
     contents: str = None
     workerList: List[int]
-    plantList: list[int]
+    plantList: List[int]
 
     def toScheduleTable(self) -> ScheduleTable:
         return ScheduleTable(
@@ -179,3 +200,40 @@ class ScheduleParam(BaseModel):
             scheduled_at=self.scheduledAt,
             contents=self.contents
         )
+
+    def toScheduleWorkerTableList(self, idx) -> List[ScheduleWorkerTable]:
+        return [
+            ScheduleWorkerTable(
+                schedule_idx=idx,
+                user_idx=userIdx
+            )
+            for userIdx in self
+        ]
+
+    def toSchedulePlantTableList(self, idx) -> List[SchedulePlantTable]:
+        return [
+            SchedulePlantTable(
+                schedule_idx=idx,
+                plant_idx=plantIdx
+            )
+            for plantIdx in self
+        ]
+
+
+def yearMonthConver(yearMonth: str) -> Optional[date]:
+    if yearMonth is None:
+        return None
+
+    if isinstance(yearMonth, str) and yearMonth.strip() == "":
+        return None
+
+    year, month_num = map(int, yearMonth.split("."))
+    result = date(year, month_num, 1)
+
+    return result
+
+
+class MonthScheduleParam(BaseModel):
+    year: int = None
+    month: int = None
+    userIdx: int = None
