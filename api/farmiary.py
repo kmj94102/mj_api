@@ -178,6 +178,24 @@ def select_farm(item: IdParam):
     return farmList
 
 
+@router.post("/farm/group/select", summary="그룹 멤버 조회")
+def select_farm_group_member(item: IdParam):
+    session.commit()
+
+    memberList = session.query(
+        FarmGroupTable.user_idx.label("userIdx"),
+        FarmiaryUserTable.name,
+        FarmiaryUserTable.profile_image.label("profileImage")
+    ).join(
+        FarmiaryUserTable,
+        FarmiaryUserTable.idx == FarmGroupTable.user_idx
+    ).filter(
+        FarmGroupTable.farm_idx == item.idx
+    ).all()
+
+    return memberList
+
+
 @router.post("/plant/insert", summary="식물 등록")
 def insert_plant(item: Plant):
     plant = item.toTable()
@@ -197,6 +215,15 @@ def delete_plant(item: IdParam):
     session.execute(delete(PlantTable).where(PlantTable.idx == item.idx))
     session.commit()
     return f"{plant.name} 삭제 완료"
+
+
+@router.post("/plant/select", summary="식물 조회")
+def select_plant(item: IdParam):
+    session.commit()
+
+    plantList = session.query(PlantTable).filter(PlantTable.farm_idx == item.idx).all()
+
+    return plantList
 
 
 @router.post("/schedule/insert", summary="일정 등록")
@@ -255,16 +282,9 @@ def get_schedules(
     return schedules
 
 
-@router.post("/schedule/select/month", summary="일정 조회(월)")
-async def read_calendar_month(item: MonthScheduleParam):
-    first_day = datetime(item.year, item.month, 1)
-    last_day_num = calendar.monthrange(item.year, item.month)[1]
-    last_day = datetime(item.year, item.month, last_day_num)
-
-    weekday = first_day.weekday()
-    start_index = (weekday + 1) % 7
-
-    rows = get_schedules(first_day, last_day, item.userIdx)
+# Check Period Schedule
+def read_period_schedule(userIdx: int, start: datetime, end: datetime):
+    rows = get_schedules(start, end, userIdx)
 
     data_map = {}
 
@@ -277,12 +297,12 @@ async def read_calendar_month(item: MonthScheduleParam):
         data_map[date_key].append(row)
 
     result = []
+    start_day_num = start.day
+    last_day_num = end.day
+    print(f"start: {start_day_num} / end: {last_day_num}\n\n\n")
 
-    for _ in range(start_index):
-        result.append(None)
-
-    for day in range(1, last_day_num + 1):
-        date_str = f"{item.year}.{item.month:02d}.{day:02d}"
+    for day in range(start_day_num, last_day_num + 1):
+        date_str = f"{start.year}.{start.month:02d}.{day:02d}"
 
         result.append({
             "date": date_str,
@@ -292,5 +312,31 @@ async def read_calendar_month(item: MonthScheduleParam):
     return result
 
 
-async def read_schedule(current_date: datetime):
-    session.query()
+@router.post("/schedule/select/month", summary="일정 조회(월)")
+async def read_calendar_month(item: MonthScheduleParam):
+    first_day = datetime(item.year, item.month, 1)
+    last_day_num = calendar.monthrange(item.year, item.month)[1]
+    last_day = datetime(item.year, item.month, last_day_num)
+
+    weekday = first_day.weekday()
+    start_index = (weekday + 1) % 7
+
+    result = read_period_schedule(item.userIdx, first_day, last_day)
+    result[:0] = [None] * start_index
+
+    return result
+
+
+@router.post("/schedule/select/week", summary="일정 조회(주)")
+async def read_calendar_month(item: HomeParam):
+    base_date = datetime(item.year, item.month, item.date)
+    days_from_sunday = (base_date.weekday() + 1) % 7
+
+    first_day = base_date - timedelta(days=days_from_sunday)
+    last_day = first_day + timedelta(days=6)
+
+    print(f"\n\n\n{first_day}\n{last_day}\n\n\n")
+
+    result = read_period_schedule(item.userIdx, first_day, last_day)
+
+    return result

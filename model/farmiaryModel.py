@@ -237,3 +237,10 @@ class MonthScheduleParam(BaseModel):
     year: int = None
     month: int = None
     userIdx: int = None
+
+
+class HomeParam(BaseModel):
+    year: int = None
+    month: int = None
+    date: int = None
+    userIdx: int = None
