@@ -91,6 +91,10 @@ class NewAddFarm(BaseModel):
         )
 
 
+class GroupSearch(BaseModel):
+    qr: str = None
+
+
 class JoinFarm(BaseModel):
     qr: str = None
     userIdx: int = None

@@ -167,8 +167,8 @@ def delete_farm(item: WithdrawalFarm):
     return "팜 삭제 완료"
 
 
-@router.post("/farm/select", summary="팜 조회")
-def select_farm(item: IdParam):
+@router.post("/farm/select/userId", summary="userId로 팜 조회")
+def select_farm_from_id(item: IdParam):
     session.commit()
 
     farmList = session.query(
@@ -178,7 +178,16 @@ def select_farm(item: IdParam):
     return farmList
 
 
-@router.post("/farm/group/select", summary="그룹 멤버 조회")
+@router.post("/farm/select/qr", summary="qr로 팜 조회")
+def select_farm_from_qr(item: GroupSearch):
+    session.commit()
+
+    group = session.query(FarmTable).filter(FarmTable.qr == item.qr).first()
+
+    return group
+
+
+@router.post("/farm/group/member/select", summary="그룹 멤버 조회")
 def select_farm_group_member(item: IdParam):
     session.commit()
 
