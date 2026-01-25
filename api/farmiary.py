@@ -235,6 +235,41 @@ def select_plant(item: IdParam):
     return plantList
 
 
+@router.post("/schedule/insert/info", summary="일정 등록 정보 조회")
+def select_schedule_insert_info(item: IdParam):
+    session.commit()
+
+    farmList = session.query(
+        FarmTable.idx, FarmTable.name
+    ).filter(
+        FarmGroupTable.user_idx == item.idx, FarmTable.idx == FarmGroupTable.farm_idx
+    ).all()
+
+    data = []
+
+    for farm in farmList:
+        plantList = session.query(PlantTable.idx, PlantTable.name).filter(PlantTable.farm_idx == farm.idx).all()
+        workerList = session.query(
+            FarmiaryUserTable.idx,
+            FarmiaryUserTable.name,
+            FarmiaryUserTable.profile_image.label("profileImage")
+        ).filter(
+            FarmGroupTable.farm_idx == farm.idx,
+            FarmGroupTable.user_idx == FarmiaryUserTable.idx,
+            FarmGroupTable.user_idx != item.idx,
+        ).all()
+        data.append(
+            {
+                "farmIdx": farm.idx,
+                "farmName": farm.name,
+                "plantList": plantList,
+                "workerList": workerList
+            }
+        )
+
+    return data
+
+
 @router.post("/schedule/insert", summary="일정 등록")
 def insert_schedule(item: ScheduleParam):
     session.commit()
