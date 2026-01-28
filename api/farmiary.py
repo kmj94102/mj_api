@@ -35,9 +35,10 @@ def insert_new_user(item: FarmiaryUser):
     if data:
         raise HTTPException(status_code=400, detail="이미 회원가입한 이메일입니다.")
 
-    session.add(item.toTable())
+    data = item.toTable()
+    session.add(data)
     session.commit()
-    return f"${item.name}님, 환영합니다"
+    return data.idx
 
 
 @router.post("/user/withdrawal", summary="회원탈퇴")
