@@ -324,7 +324,36 @@ def get_schedules(
         .all()
     )
 
-    return schedules
+    return [
+        {
+            "idx": item.idx,
+            "contents": item.contents,
+            "farmIdx": item.farm_idx,
+            "scheduledAt": item.scheduled_at,
+            "plants": [
+                {
+                    "idx": plant.plant.idx,
+                    "name": plant.plant.name,
+                    "farmIdx": plant.plant.farm_idx,
+                    "startDate": plant.plant.start_date,
+                    "endDate": plant.plant.end_date,
+                }
+                for plant in item.plants
+            ],
+            "workers": [
+                {
+                    "name": work.user.name,
+                    "idx": work.user.idx,
+                    "createdAt": work.user.created_at,
+                    "loginType": work.user.login_type,
+                    "profileImage": work.user.profile_image,
+                    "email": work.user.email,
+                }
+                for work in item.workers
+            ]
+        }
+        for item in schedules
+    ]
 
 
 # Check Period Schedule
@@ -334,7 +363,7 @@ def read_period_schedule(userIdx: int, start: datetime, end: datetime):
     data_map = {}
 
     for row in rows:
-        date_key = row.scheduled_at.strftime("%Y.%m.%d")
+        date_key = row["scheduledAt"].strftime("%Y.%m.%d")
 
         if date_key not in data_map:
             data_map[date_key] = []
