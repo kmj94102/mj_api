@@ -4,7 +4,7 @@ from datetime import timedelta
 from fastapi import APIRouter, HTTPException, Query, Depends
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import func, delete
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 
 from api.common import get_last_day_time
 from db import session
@@ -317,6 +317,7 @@ def get_schedules(
         .filter(FarmGroupTable.user_idx == userIdx)
         .filter(ScheduleTable.scheduled_at.between(start, end))
         .options(
+            joinedload(ScheduleTable.farm),
             selectinload(ScheduleTable.plants).selectinload(SchedulePlantTable.plant),
             selectinload(ScheduleTable.workers).selectinload(ScheduleWorkerTable.user),
         )
@@ -329,6 +330,7 @@ def get_schedules(
             "idx": item.idx,
             "contents": item.contents,
             "farmIdx": item.farm_idx,
+            "farmName": item.farm.name,
             "scheduledAt": item.scheduled_at,
             "plants": [
                 {
