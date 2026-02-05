@@ -188,6 +188,49 @@ def select_farm_from_qr(item: GroupSearch):
     return group
 
 
+@router.post("/farm/select/detail", summary="팜 전체 상세 조회")
+def select_farm_detail(item: IdParam):
+    session.commit()
+
+    farms = (
+        session.query(FarmTable)
+        .join(FarmGroupTable, FarmGroupTable.farm_idx == FarmTable.idx)
+        .filter(FarmGroupTable.user_idx == item.idx)
+        .options(
+            selectinload(FarmTable.groups).selectinload(FarmGroupTable.user),
+            selectinload(FarmTable.plants),
+        )
+        .all()
+    )
+
+    result = []
+
+    for farm in farms:
+        result.append({
+            "farmIdx": farm.idx,
+            "farmName": farm.name,
+            "address": farm.address,
+            "info": farm.info,
+            "workers": [
+                {
+                    "workerIdx": group.user.idx,
+                    "workerName": group.user.name,
+                    "role": group.role
+                }
+                for group in farm.groups
+            ],
+            "plants": [
+                {
+                    "plantIdx": plant.idx,
+                    "plantName": plant.name
+                }
+                for plant in farm.plants
+            ]
+        })
+
+    return result
+
+
 @router.post("/farm/group/member/select", summary="그룹 멤버 조회")
 def select_farm_group_member(item: IdParam):
     session.commit()
@@ -204,7 +247,6 @@ def select_farm_group_member(item: IdParam):
     ).all()
 
     return memberList
-
 
 @router.post("/plant/insert", summary="식물 등록")
 def insert_plant(item: Plant):
