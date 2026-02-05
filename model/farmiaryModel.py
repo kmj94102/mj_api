@@ -55,6 +55,9 @@ class FarmTable(Base):
     qr = Column(String(255))
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    groups = relationship("FarmGroupTable", back_populates="farm")
+    plants = relationship("PlantTable", back_populates="farm")
+
 
 class FarmGroupTable(Base):
     __tablename__ = "farm_groups"
