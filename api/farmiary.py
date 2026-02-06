@@ -211,6 +211,7 @@ def select_farm_detail(item: IdParam):
             "farmName": farm.name,
             "address": farm.address,
             "info": farm.info,
+            "qr": farm.qr,
             "workers": [
                 {
                     "workerIdx": group.user.idx,
