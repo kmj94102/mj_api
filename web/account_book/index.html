@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>가계부</title>
+        <link rel="stylesheet" href="style.css"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    </head>
+    <body>
+        <div id="dimLayer"></div>
+
+        <header class="topbar">
+            <a class="homeLink" href="/">
+                <i class="fa-solid fa-house"></i>
+            </a>
+            <div class="cycleNav">
+                <button id="prevCycle" aria-label="이전"><i class="fa-solid fa-chevron-left"></i></button>
+                <div id="cycleLabel">불러오는 중...</div>
+                <button id="nextCycle" aria-label="다음"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <button id="settingsBtn" aria-label="설정"><i class="fa-solid fa-gear"></i></button>
+        </header>
+
+        <div class="summaryBar">
+            <div class="summaryItem income">
+                <span>수입</span>
+                <strong id="sumIncome">0원</strong>
+            </div>
+            <div class="summaryItem expenditure">
+                <span>지출</span>
+                <strong id="sumExpenditure">0원</strong>
+            </div>
+            <div class="summaryItem total">
+                <span>합계</span>
+                <strong id="sumTotal">0원</strong>
+            </div>
+        </div>
+
+        <nav class="tabs">
+            <button class="tabBtn active" data-tab="calendar">캘린더</button>
+            <button class="tabBtn" data-tab="stats">통계</button>
+            <button class="tabBtn" data-tab="fixed">고정·즐겨찾기</button>
+        </nav>
+
+        <main>
+            <section id="calendarTab" class="tabPanel active">
+                <div class="weekHeader">
+                    <div class="sun">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="sat">토</div>
+                </div>
+                <div class="calendar" id="calendar"></div>
+            </section>
+
+            <section id="statsTab" class="tabPanel">
+                <div class="statsBlock">
+                    <h3>지난달 분석</h3>
+                    <div id="lastMonthRange" class="rangeLabel"></div>
+                    <div id="lastMonthChart" class="barList"></div>
+                </div>
+                <div class="statsBlock">
+                    <h3>올해 요약</h3>
+                    <div id="yearChart" class="yearBarChart"></div>
+                </div>
+            </section>
+
+            <section id="fixedTab" class="tabPanel">
+                <div class="statsBlock">
+                    <h3>고정 내역 <button class="smallBtn" onclick="openAddFixedDialog()">+ 추가</button></h3>
+                    <div id="fixedList" class="listBox"></div>
+                </div>
+                <div class="statsBlock">
+                    <h3>즐겨찾기</h3>
+                    <p class="hint">항목을 누르면 새 내역 입력창에 바로 채워져요.</p>
+                    <div id="frequentlyList" class="listBox"></div>
+                </div>
+            </section>
+        </main>
+
+        <button id="fab" onclick="openAddDialog()" aria-label="내역 추가">+</button>
+
+        <!-- 날짜 이동 -->
+        <div class="dialog" id="jumpDialog">
+            <h2>날짜 이동</h2>
+            <label>이동할 날짜</label>
+            <input type="date" id="jumpDate"/>
+            <div class="dialogActions">
+                <button onclick="applyJumpDate()">이동</button>
+                <button class="ghost" onclick="closeDialog('jumpDialog')">닫기</button>
+            </div>
+        </div>
+
+        <!-- 설정 -->
+        <div class="dialog" id="settingsDialog">
+            <h2>설정</h2>
+            <label>정산 기준일 (매월)</label>
+            <input type="number" id="baseDateInput" min="1" max="31"/>
+            <p class="hint">예: 25로 설정하면 이번 달 26일부터 다음 달 25일까지를 한 달로 계산해요.</p>
+            <div class="dialogActions">
+                <button onclick="applySettings()">저장</button>
+                <button class="ghost" onclick="closeDialog('settingsDialog')">닫기</button>
+            </div>
+        </div>
+
+        <!-- 하루 상세 -->
+        <div class="dialog" id="dayDialog">
+            <h2 id="dayDialogTitle"></h2>
+            <div id="dayDialogList" class="dayList"></div>
+            <div class="dialogActions">
+                <button onclick="openAddDialogFromDay()">+ 이 날짜에 추가</button>
+                <button class="ghost" onclick="closeDialog('dayDialog')">닫기</button>
+            </div>
+        </div>
+
+        <!-- 내역 추가 -->
+        <div class="dialog" id="addDialog">
+            <h2>내역 추가</h2>
+            <label>날짜</label>
+            <input type="date" id="addDate"/>
+
+            <label>구분</label>
+            <div class="toggleGroup" id="addTypeToggle">
+                <button type="button" class="typeBtn expense active" data-type="expense">지출</button>
+                <button type="button" class="typeBtn income" data-type="income">수입</button>
+            </div>
+
+            <label>금액</label>
+            <input type="number" id="addAmount" min="0" placeholder="0"/>
+
+            <label>분류</label>
+            <input type="text" id="addUsageType" list="usageTypeOptions" placeholder="예: 식비"/>
+            <datalist id="usageTypeOptions">
+                <option value="식비"></option>
+                <option value="교통"></option>
+                <option value="쇼핑"></option>
+                <option value="문화/여가"></option>
+                <option value="의료/건강"></option>
+                <option value="주거/관리비"></option>
+                <option value="통신비"></option>
+                <option value="경조사"></option>
+                <option value="급여"></option>
+                <option value="용돈"></option>
+                <option value="기타"></option>
+            </datalist>
+
+            <label>내용</label>
+            <input type="text" id="addWhereToUse" placeholder="예: 점심 식사"/>
+
+            <label class="checkboxLabel">
+                <input type="checkbox" id="addFrequentlyCheck"/>
+                즐겨찾기에 추가
+            </label>
+
+            <div class="dialogActions">
+                <button onclick="submitAccountBook()">등록</button>
+                <button class="ghost" onclick="closeDialog('addDialog')">닫기</button>
+            </div>
+        </div>
+
+        <!-- 고정 내역 추가 -->
+        <div class="dialog" id="addFixedDialog">
+            <h2>고정 내역 추가</h2>
+            <label>매월 며칠</label>
+            <input type="number" id="fixedDay" min="1" max="31" placeholder="예: 25"/>
+
+            <label>구분</label>
+            <div class="toggleGroup" id="fixedTypeToggle">
+                <button type="button" class="typeBtn expense active" data-type="expense">지출</button>
+                <button type="button" class="typeBtn income" data-type="income">수입</button>
+            </div>
+
+            <label>금액</label>
+            <input type="number" id="fixedAmount" min="0" placeholder="0"/>
+
+            <label>분류</label>
+            <input type="text" id="fixedUsageType" list="usageTypeOptions" placeholder="예: 주거/관리비"/>
+
+            <label>내용</label>
+            <input type="text" id="fixedWhereToUse" placeholder="예: 월세"/>
+
+            <div class="dialogActions">
+                <button onclick="submitFixed()">등록</button>
+                <button class="ghost" onclick="closeDialog('addFixedDialog')">닫기</button>
+            </div>
+        </div>
+
+        <script src="network.js"></script>
+    </body>
+</html>
