@@ -3,7 +3,7 @@ const ACCOUNT_API = `${API_BASE}/accountBook`;
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
-let baseDate = parseInt(localStorage.getItem('accountBookBaseDate') || '1', 10);
+let baseDate = parseInt(localStorage.getItem('accountBookBaseDate') || '20', 10);
 let referenceDate = new Date();
 let cycleStartDate = null;
 let cycleEndDate = null;
